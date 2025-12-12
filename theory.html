@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Стереометрия: Теория</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="text-center">
+        <h1>ЭОР: Стереометрия</h1>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid justify-content-center">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Главная</a></li>
+                    <li class="nav-item"><a class="nav-link" href="theory.html">Теория</a></li>
+                    <li class="nav-item"><a class="nav-link" href="practice.html">Практика</a></li>
+                    <li class="nav-item"><a class="nav-link" href="quiz.html">Проверка</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="container mt-4">
+        <h2>Теория: Подробные объяснения</h2>
+        <div class="accordion" id="theoryAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingPrism">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrism">Призма</button>
+                </h2>
+                <div id="collapsePrism" class="accordion-collapse collapse show">
+                    <div class="accordion-body">
+                        <p>Призма — это как коробка или банка: две одинаковые основы (например, треугольники или квадраты) и боковые стенки, соединяющие их. Представь стопку книг — это призма с прямоугольным основанием.</p>
+                        <img src="https://as2.ftcdn.net/jpg/01/81/82/19/1000_F_181821927_R32tnuqiAxmGUKvMSlDVi5El2iOG5hBM.jpg" alt="Иллюстрация призмы" class="img-fluid mb-3">
+                        <h5>Формулы:</h5>
+                        <ul>
+                            <li>Объём: V = S_основания × h (S — площадь основания, h — высота, расстояние между основами).</li>
+                            <li>Площадь поверхности: S_полн = 2 × S_основания + P_основания × h (P — периметр основания).</li>
+                        </ul>
+                        <p>Пример: Прямоугольная призма (коробка) с основанием 3×4 см, высотой 5 см. S_основания = 3×4=12 см², V=12×5=60 см³. Площадь = 2×12 + (3+4+3+4)×5 = 24 + 70 = 94 см².</p>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingPyramid">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePyramid">Пирамида</button>
+                </h2>
+                <div id="collapsePyramid" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <p>Пирамида — это как египетская пирамида: основание (многоугольник) и вершина, соединённая ребрами. Все грани — треугольники, сходящиеся в вершине. Аналогия: конус мороженого, но с плоским основанием.</p>
+                        <img src="https://images.squarespace-cdn.com/content/v1/54905286e4b050812345644c/3b5a1121-fcb5-4c28-a1fd-beb8e7b3627d/Banner-02.jpg" alt="Иллюстрация пирамиды" class="img-fluid mb-3">
+                        <h5>Формулы:</h5>
+                        <ul>
+                            <li>Объём: V = (1/3) × S_основания × h (h — высота от вершины к основанию).</li>
+                            <li>Площадь поверхности: S_полн = S_основания + сумма площадей боковых граней (каждая — треугольник).</li>
+                        </ul>
+                        <p>Пример: Пирамида с квадратным основанием 4×4 см, h=6 см. S_основания=16 см², V=(1/3)×16×6=32 см³. Боковые грани: каждая треугольник с основой 4 см и высотой апофемы (допустим 5 см), S_бок=4×(0.5×4×5)=40 см², всего S=16+40=56 см².</p>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingCylinder">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCylinder">Цилиндр</button>
+                </h2>
+                <div id="collapseCylinder" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <p>Цилиндр — это как банка консервов: два круглых основания и боковая поверхность, как свёрнутая бумага. Круглые основания параллельны.</p>
+                        <img src="https://static.vecteezy.com/system/resources/previews/041/945/084/non_2x/realistic-basic-3d-shapes-geometry-sphere-cylinder-pyramid-and-cube-forms-geometric-shapes-model-isolated-illustration-icons-set-vector.jpg" alt="Иллюстрация цилиндра" class="img-fluid mb-3">
+                        <h5>Формулы:</h5>
+                        <ul>
+                            <li>Объём: V = π × r² × h (r — радиус основания, h — высота).</li>
+                            <li>Площадь поверхности: S_полн = 2 × π × r² + 2 × π × r × h.</li>
+                        </ul>
+                        <p>Пример: Цилиндр r=3 см, h=10 см. V=π×9×10≈282.7 см³. S=2π×9 + 2π×3×10≈56.5 + 188.5≈245 см².</p>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingCone">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCone">Конус</button>
+                </h2>
+                <div id="collapseCone" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <p>Конус — это как мороженое в рожке: круглое основание и вершина. Боковая поверхность — как развёрнутый сектор круга.</p>
+                        <img src="https://www.shutterstock.com/image-vector/3d-geometric-shapes-sphere-cube-260nw-2525111327.jpg" alt="Иллюстрация конуса" class="img-fluid mb-3">
+                        <h5>Формулы:</h5>
+                        <ul>
+                            <li>Объём: V = (1/3) × π × r² × h.</li>
+                            <li>Площадь поверхности: S_полн = π × r² + π × r × l (l — образующая, длина от вершины к краю основания).</li>
+                        </ul>
+                        <p>Пример: Конус r=4 см, h=9 см, l=√(r²+h²)=√(16+81)=√97≈9.8 см. V=(1/3)π×16×9≈150.8 см³. S=π×16 + π×4×9.8≈50.3 + 123.2≈173.5 см².</p>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingSphere">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSphere">Сфера</button>
+                </h2>
+                <div id="collapseSphere" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <p>Сфера — это идеальный шар, как футбольный мяч или планета. Все точки на поверхности равноудалены от центра.</p>
+                        <img src="https://l450v.alamy.com/450v/2s7n0r6/realistic-3d-color-basic-shapes-solid-colored-geometric-forms-cylinder-and-colorful-cube-shape-maths-geometrical-figure-form-realistic-shapes-model-isolated-vector-illustration-icons-set-realistic-3d-color-basic-shapes-solid-colored-geometric-forms-cylinder-and-colorful-cube-shape-vector-illustration-set-2s7n0r6.jpg" alt="Иллюстрация сферы" class="img-fluid mb-3">
+                        <h5>Формулы:</h5>
+                        <ul>
+                            <li>Объём: V = (4/3) × π × r³.</li>
+                            <li>Площадь поверхности: S = 4 × π × r².</li>
+                        </ul>
+                        <p>Пример: Сфера r=5 см. V=(4/3)π×125≈523.6 см³. S=4π×25≈314.2 см².</p>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingCube">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCube">Куб и параллелепипед</button>
+                </h2>
+                <div id="collapseCube" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <p>Куб — особая призма с квадратными гранями, как игральный кубик. Параллелепипед — как растянутый куб, с прямоугольными гранями (ящик).</p>
+                        <img src="https://static.vecteezy.com/system/resources/previews/041/945/084/non_2x/realistic-basic-3d-shapes-geometry-sphere-cylinder-pyramid-and-cube-forms-geometric-shapes-model-isolated-illustration-icons-set-vector.jpg" alt="Иллюстрация куба" class="img-fluid mb-3">
+                        <h5>Формулы (для куба):</h5>
+                        <ul>
+                            <li>Объём: V = a³ (a — сторона).</li>
+                            <li>Площадь: S = 6 × a².</li>
+                        </ul>
+                        <p>Для параллелепипеда: V = a × b × c, S = 2(ab + bc + ca).</p>
+                        <p>Пример: Куб a=2 см. V=8 см³, S=24 см². Параллелепипед 2×3×4: V=24 см³, S=2(6+12+8)=52 см².</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

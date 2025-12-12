@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Стереометрия: Проверка</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="text-center">
+        <h1>ЭОР: Стереометрия</h1>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid justify-content-center">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Главная</a></li>
+                    <li class="nav-item"><a class="nav-link" href="theory.html">Теория</a></li>
+                    <li class="nav-item"><a class="nav-link" href="practice.html">Практика</a></li>
+                    <li class="nav-item"><a class="nav-link" href="quiz.html">Проверка</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="container mt-4">
+        <h2>Тест: 10 вопросов на знание стереометрии</h2>
+        <p>Выберите правильный ответ для каждого вопроса. После ответа нажмите "Проверить", чтобы увидеть результат и объяснения. Вы можете сбросить тест и попробовать заново.</p>
+        <form id="quizForm">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>1. Какова формула объёма призмы?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="a"> a) S × h</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="b"> b) (1/3) S × h</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="c"> c) π r² h</div>
+                    <p id="feedback1" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>2. Площадь поверхности сферы?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="a"> a) 4 π r²</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="b"> b) (4/3) π r³</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="c"> c) 2 π r (r + h)</div>
+                    <p id="feedback2" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>3. Объём пирамиды?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q3" value="a"> a) S × h</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q3" value="b"> b) (1/3) S × h</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q3" value="c"> c) π r² h</div>
+                    <p id="feedback3" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>4. Объём цилиндра?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q4" value="a"> a) (1/3) π r² h</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q4" value="b"> b) π r² h</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q4" value="c"> c) 4 π r²</div>
+                    <p id="feedback4" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>5. Площадь полной поверхности конуса?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q5" value="a"> a) π r² + π r l</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q5" value="b"> b) 2 π r (r + h)</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q5" value="c"> c) 4 π r²</div>
+                    <p id="feedback5" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>6. Объём куба со стороной a?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q6" value="a"> a) a³</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q6" value="b"> b) 6 a²</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q6" value="c"> c) (4/3) π a³</div>
+                    <p id="feedback6" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>7. Что такое апофема в пирамиде?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q7" value="a"> a) Высота пирамиды</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q7" value="b"> b) Высота боковой грани от вершины к середине основания ребра</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q7" value="c"> c) Периметр основания</div>
+                    <p id="feedback7" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>8. Формула площади поверхности параллелепипеда?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q8" value="a"> a) 6 a²</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q8" value="b"> b) 2 (a b + b c + c a)</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q8" value="c"> c) π r² h</div>
+                    <p id="feedback8" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>9. Объём конуса?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q9" value="a"> a) π r² h</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q9" value="b"> b) (1/3) π r² h</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q9" value="c"> c) (4/3) π r³</div>
+                    <p id="feedback9" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p>10. Площадь полной поверхности цилиндра?</p>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q10" value="a"> a) 4 π r²</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q10" value="b"> b) 2 π r (r + h)</div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="q10" value="c"> c) (1/3) π r² h</div>
+                    <p id="feedback10" class="feedback mt-2"></p>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary me-2" onclick="checkQuiz()">Проверить</button>
+            <button type="button" class="btn btn-secondary" onclick="resetQuiz()">Сбросить</button>
+        </form>
+        <div id="result" class="mt-3 alert alert-info" style="display: none;"></div>
+    </div>
+    <script>
+        const answers = {
+            q1: 'a',
+            q2: 'a',
+            q3: 'b',
+            q4: 'b',
+            q5: 'a',
+            q6: 'a',
+            q7: 'b',
+            q8: 'b',
+            q9: 'b',
+            q10: 'b'
+        };
+        const feedbacks = {
+            q1: 'Правильный ответ: a) S × h. Объём призмы — площадь основания умноженная на высоту, как объём коробки.',
+            q2: 'Правильный ответ: a) 4 π r². Это площадь поверхности шара; объём — (4/3) π r³.',
+            q3: 'Правильный ответ: b) (1/3) S × h. Для пирамиды объём втрое меньше, чем у призмы с тем же основанием и высотой.',
+            q4: 'Правильный ответ: b) π r² h. Это объём цилиндра, как площадь круга умноженная на высоту.',
+            q5: 'Правильный ответ: a) π r² + π r l. Площадь основания плюс боковая поверхность (l — образующая).',
+            q6: 'Правильный ответ: a) a³. Для куба объём — сторона в кубе.',
+            q7: 'Правильный ответ: b) Высота боковой грани от вершины к середине основания ребра. Используется для расчёта боковой площади.',
+            q8: 'Правильный ответ: b) 2 (a b + b c + c a). Сумма площадей противоположных граней.',
+            q9: 'Правильный ответ: b) (1/3) π r² h. Аналогично пирамиде, но с круглым основанием.',
+            q10: 'Правильный ответ: b) 2 π r (r + h). Два круга плюс боковая поверхность.'
+        };
+
+        function checkQuiz() {
+            const form = document.getElementById('quizForm');
+            let score = 0;
+            let allAnswered = true;
+            for (let i = 1; i <= 10; i++) {
+                const selected = form.querySelector(`input[name="q${i}"]:checked`);
+                const feedbackEl = document.getElementById(`feedback${i}`);
+                if (!selected) {
+                    allAnswered = false;
+                    feedbackEl.innerText = 'Выберите ответ!';
+                    feedbackEl.className = 'feedback mt-2 text-warning';
+                    continue;
+                }
+                if (selected.value === answers[`q${i}`]) {
+                    score++;
+                    feedbackEl.innerText = 'Правильно! ' + feedbacks[`q${i}`];
+                    feedbackEl.className = 'feedback mt-2 text-success';
+                } else {
+                    feedbackEl.innerText = 'Неверно. ' + feedbacks[`q${i}`];
+                    feedbackEl.className = 'feedback mt-2 text-danger';
+                }
+            }
+            if (!allAnswered) {
+                alert('Ответьте на все вопросы!');
+                return;
+            }
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `Ваш результат: ${score}/10. <br>Если хотите улучшить, сбросьте и попробуйте снова!`;
+            resultDiv.style.display = 'block';
+        }
+
+        function resetQuiz() {
+            const form = document.getElementById('quizForm');
+            form.reset();
+            for (let i = 1; i <= 10; i++) {
+                document.getElementById(`feedback${i}`).innerText = '';
+            }
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

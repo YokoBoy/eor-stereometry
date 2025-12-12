@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Стереометрия: Практика</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="text-center">
+        <h1>ЭОР: Стереометрия</h1>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid justify-content-center">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Главная</a></li>
+                    <li class="nav-item"><a class="nav-link" href="theory.html">Теория</a></li>
+                    <li class="nav-item"><a class="nav-link" href="practice.html">Практика</a></li>
+                    <li class="nav-item"><a class="nav-link" href="quiz.html">Проверка</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="container mt-4">
+        <h2>Практика: Интерактивные задания</h2>
+        <div class="interactive mb-4">
+            <h4>1. Калькулятор объёма и площади поверхности</h4>
+            <p>Выберите фигуру, заполните необходимые параметры (все в см) и нажмите "Рассчитать". Формулы и примеры — в теории.</p>
+            <div class="form-group">
+                <label for="shape">Фигура:</label>
+                <select id="shape" class="form-control mb-2">
+                    <option value="prism">Призма (прямоугольная: длина, ширина, высота)</option>
+                    <option value="pyramid">Пирамида (площадь основания, высота)</option>
+                    <option value="cylinder">Цилиндр (радиус, высота)</option>
+                    <option value="cone">Конус (радиус, высота)</option>
+                    <option value="sphere">Сфера (радиус)</option>
+                    <option value="cube">Куб (сторона)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="number" id="param1" class="form-control mb-2" placeholder="Параметр 1 (например, длина/радиус/сторона)" required>
+                <input type="number" id="param2" class="form-control mb-2" placeholder="Параметр 2 (ширина/высота, если нужно)">
+                <input type="number" id="param3" class="form-control mb-2" placeholder="Параметр 3 (высота, если нужно)">
+            </div>
+            <button class="btn btn-success" onclick="calculate()">Рассчитать</button>
+            <div id="resultCalc" class="mt-3 alert alert-info" style="display: none;"></div>
+        </div>
+        <div class="interactive mb-4">
+            <h4>2. Игра "Сопоставь формулу"</h4>
+            <p>Перетащите названия фигур к правильным формулам объёма. Формулы перемешаны!</p>
+            <div class="row">
+                <div class="col-md-5">
+                    <h5>Фигуры:</h5>
+                    <div id="figures" class="d-flex flex-column">
+                        <!-- Фигуры в случайном порядке -->
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <h5>Формулы (перемешаны):</h5>
+                    <div id="formulas" class="d-flex flex-column">
+                        <!-- Формулы в случайном порядке -->
+                    </div>
+                </div>
+            </div>
+            <p id="resultMatch" class="mt-3"></p>
+            <button class="btn btn-secondary mt-2" onclick="resetMatchGame()">Сбросить и перемешать заново</button>
+        </div>
+        <div class="interactive mb-4">
+            <h4>3. Визуализация: Вращение 3D-фигуры (призма)</h4>
+            <p>Нажмите и двигайте мышью по canvas, чтобы вращать призму. Видны рёбра и грани с цветами для ясности.</p>
+            <canvas id="canvas" width="400" height="400" class="border"></canvas>
+            <p id="rotationInfo" class="mt-2"></p>
+        </div>
+        <div class="interactive mb-4">
+            <h4>4. Задание: Выбери правильную формулу</h4>
+            <p>Выберите правильную формулу объёма для случайной фигуры. Нажмите "Новый вопрос" для следующего.</p>
+            <div id="question" class="alert alert-primary"></div>
+            <div id="options" class="d-flex flex-column"></div>
+            <button class="btn btn-primary mt-2" onclick="generateQuestion()">Новый вопрос</button>
+            <p id="resultFormula" class="mt-3"></p>
+        </div>
+        <div class="interactive mb-4">
+            <h4>5. Симуляция: Заполни объём</h4>
+            <p>Представьте, что вы заполняете фигуру водой. Введите объём и увидите, сколько "единиц" нужно. (Простая симуляция расчёта.)</p>
+            <select id="fillShape" class="form-control mb-2">
+                <option value="cylinder">Цилиндр (r=5, h=10)</option>
+                <option value="sphere">Сфера (r=5)</option>
+            </select>
+            <input type="number" id="fillVolume" class="form-control mb-2" placeholder="Желаемый объём (см³)">
+            <button class="btn btn-info" onclick="simulateFill()">Симулировать</button>
+            <div id="resultFill" class="mt-3 alert alert-warning" style="display: none;"></div>
+        </div>
+    </div>
+    <script>
+        // Калькулятор (улучшен: required поля, алерт с объяснением, проверка ввода)
+        function calculate() {
+            const shape = document.getElementById('shape').value;
+            const p1 = parseFloat(document.getElementById('param1').value);
+            const p2 = parseFloat(document.getElementById('param2').value) || 0;
+            const p3 = parseFloat(document.getElementById('param3').value) || 0;
+            if (isNaN(p1) || p1 <= 0) {
+                alert('Введите положительные числа!');
+                return;
+            }
+            let volume = 0, surface = 0, explanation = '';
+            if (shape === 'prism') {
+                if (isNaN(p2) || isNaN(p3) || p2 <= 0 || p3 <= 0) return alert('Нужны 3 параметра!');
+                volume = p1 * p2 * p3;
+                surface = 2 * (p1*p2 + p2*p3 + p3*p1);
+                explanation = 'Для прямоугольной призмы: V = длина × ширина × высота.';
+            } else if (shape === 'pyramid') {
+                if (isNaN(p2) || p2 <= 0) return alert('Нужны площадь основания и высота!');
+                volume = (1/3) * p1 * p2;
+                explanation = 'V = (1/3) × S_основания × h.';
+            } else if (shape === 'cylinder') {
+                if (isNaN(p2) || p2 <= 0) return alert('Нужны радиус и высота!');
+                volume = Math.PI * p1**2 * p2;
+                surface = 2 * Math.PI * p1 * (p1 + p2);
+                explanation = 'V = π r² h.';
+            } else if (shape === 'cone') {
+                if (isNaN(p2) || p2 <= 0) return alert('Нужны радиус и высота!');
+                volume = (1/3) * Math.PI * p1**2 * p2;
+                explanation = 'V = (1/3) π r² h.';
+            } else if (shape === 'sphere') {
+                volume = (4/3) * Math.PI * p1**3;
+                surface = 4 * Math.PI * p1**2;
+                explanation = 'V = (4/3) π r³.';
+            } else if (shape === 'cube') {
+                volume = p1**3;
+                surface = 6 * p1**2;
+                explanation = 'V = a³ для куба.';
+            }
+            const resultDiv = document.getElementById('resultCalc');
+            resultDiv.innerHTML = `Объём: ${volume.toFixed(2)} см³. <br>Площадь поверхности: ${surface.toFixed(2)} см². <br>${explanation}`;
+            resultDiv.style.display = 'block';
+        }
+
+        // Игра сопоставления (перемешивание, улучшен стиль: карточки, цвета)
+        const matchData = [
+            {figure: 'Призма', formula: 'S × h'},
+            {figure: 'Пирамида', formula: '(1/3) S × h'},
+            {figure: 'Цилиндр', formula: 'π r² h'},
+            {figure: 'Сфера', formula: '(4/3) π r³'}
+        ];
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function initMatchGame() {
+            const figuresDiv = document.getElementById('figures');
+            const formulasDiv = document.getElementById('formulas');
+            figuresDiv.innerHTML = '';
+            formulasDiv.innerHTML = '';
+            const shuffledFigures = shuffle([...matchData]);
+            const shuffledFormulas = shuffle([...matchData]);
+
+            shuffledFigures.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'draggable card bg-warning text-dark mb-2';
+                div.draggable = true;
+                div.dataset.formula = item.formula;
+                div.innerText = item.figure;
+                figuresDiv.appendChild(div);
+            });
+
+            shuffledFormulas.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'dropzone card bg-light border-primary mb-2';
+                div.dataset.formula = item.formula;
+                div.innerText = item.formula;
+                formulasDiv.appendChild(div);
+            });
+
+            const draggables = document.querySelectorAll('.draggable');
+            const dropzones = document.querySelectorAll('.dropzone');
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', () => draggable.classList.add('bg-info'));
+                draggable.addEventListener('dragend', () => draggable.classList.remove('bg-info'));
+            });
+            dropzones.forEach(dropzone => {
+                dropzone.addEventListener('dragover', e => e.preventDefault());
+                dropzone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const draggable = document.querySelector('.draggable[draggable="true"]:not([style*="display: none"])'); // Найти текущий
+                    if (draggable && draggable.dataset.formula === dropzone.dataset.formula) {
+                        dropzone.appendChild(draggable);
+                        dropzone.classList.add('bg-success');
+                        checkMatchComplete();
+                    } else {
+                        alert('Неверно! Попробуйте другую формулу.');
+                    }
+                });
+            });
+        }
+
+        function checkMatchComplete() {
+            const matched = document.querySelectorAll('.dropzone .draggable').length;
+            if (matched === matchData.length) {
+                document.getElementById('resultMatch').innerText = 'Все сопоставлено правильно! Отлично!';
+                document.getElementById('resultMatch').className = 'alert alert-success';
+            }
+        }
+
+        function resetMatchGame() {
+            document.getElementById('resultMatch').innerText = '';
+            initMatchGame();
+        }
+
+        initMatchGame();
+
+        // Визуализация (улучшена: теперь призма с цветными гранями, реальное вращение по X/Y)
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let rotationX = 0, rotationY = 0;
+        let isDragging = false;
+        let prevX = 0, prevY = 0;
+
+        function drawPrism(rotX, rotY) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Простая проекция призмы (куб для простоты)
+            const size = 100;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // Вершины куба
+            const vertices = [
+                [-size, -size, -size], [size, -size, -size], [size, size, -size], [-size, size, -size],
+                [-size, -size, size], [size, -size, size], [size, size, size], [-size, size, size]
+            ];
+
+            // Вращение
+            function rotateX(v, angle) {
+                const cos = Math.cos(angle), sin = Math.sin(angle);
+                return [v[0], v[1] * cos - v[2] * sin, v[1] * sin + v[2] * cos];
+            }
+            function rotateY(v, angle) {
+                const cos = Math.cos(angle), sin = Math.sin(angle);
+                return [v[0] * cos + v[2] * sin, v[1], -v[0] * sin + v[2] * cos];
+            }
+
+            const projected = vertices.map(v => {
+                v = rotateX(v, rotX);
+                v = rotateY(v, rotY);
+                return {x: centerX + v[0] / (v[2] / 200 + 2), y: centerY + v[1] / (v[2] / 200 + 2)};
+            });
+
+            // Рёбра
+            const edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+            ctx.strokeStyle = '#000';
+            edges.forEach(e => {
+                ctx.beginPath();
+                ctx.moveTo(projected[e[0]].x, projected[e[0]].y);
+                ctx.lineTo(projected[e[1]].x, projected[e[1]].y);
+                ctx.stroke();
+            });
+
+            // Цветные грани (полупрозрачные)
+            ctx.fillStyle = 'rgba(0, 123, 255, 0.3)'; // Передняя
+            ctx.beginPath(); ctx.moveTo(projected[0].x, projected[0].y); ctx.lineTo(projected[1].x, projected[1].y); ctx.lineTo(projected[2].x, projected[2].y); ctx.lineTo(projected[3].x, projected[3].y); ctx.fill();
+            ctx.fillStyle = 'rgba(255, 193, 7, 0.3)'; // Верхняя
+            ctx.beginPath(); ctx.moveTo(projected[0].x, projected[0].y); ctx.lineTo(projected[1].x, projected[1].y); ctx.lineTo(projected[5].x, projected[5].y); ctx.lineTo(projected[4].x, projected[4].y); ctx.fill();
+            ctx.fillStyle = 'rgba(40, 167, 69, 0.3)'; // Боковая
+            ctx.beginPath(); ctx.moveTo(projected[1].x, projected[1].y); ctx.lineTo(projected[2].x, projected[2].y); ctx.lineTo(projected[6].x, projected[6].y); ctx.lineTo(projected[5].x, projected[5].y); ctx.fill();
+        }
+
+        drawPrism(rotationX, rotationY);
+
+        canvas.addEventListener('mousedown', e => {
+            isDragging = true;
+            prevX = e.clientX;
+            prevY = e.clientY;
+        });
+        canvas.addEventListener('mousemove', e => {
+            if (isDragging) {
+                const dx = (e.clientX - prevX) / 100;
+                const dy = (e.clientY - prevY) / 100;
+                rotationY += dx;
+                rotationX += dy;
+                prevX = e.clientX;
+                prevY = e.clientY;
+                drawPrism(rotationX, rotationY);
+                document.getElementById('rotationInfo').innerText = `Вращение: X=${rotationX.toFixed(2)}, Y=${rotationY.toFixed(2)} рад.`;
+            }
+        });
+        canvas.addEventListener('mouseup', () => isDragging = false);
+        canvas.addEventListener('mouseleave', () => isDragging = false);
+
+        // Новый интерактив: Выбор формулы
+        const questions = [
+            {figure: 'Призма', correct: 'S × h', options: ['S × h', '(1/3) S × h', 'π r² h', '(4/3) π r³']},
+            {figure: 'Пирамида', correct: '(1/3) S × h', options: ['S × h', '(1/3) S × h', 'π r² h', '(4/3) π r³']},
+            {figure: 'Цилиндр', correct: 'π r² h', options: ['S × h', '(1/3) S × h', 'π r² h', '(4/3) π r³']},
+            {figure: 'Сфера', correct: '(4/3) π r³', options: ['S × h', '(1/3) S × h', 'π r² h', '(4/3) π r³']},
+            {figure: 'Конус', correct: '(1/3) π r² h', options: ['π r² h', '(1/3) π r² h', '4 π r²', 'a³']},
+            {figure: 'Куб', correct: 'a³', options: ['6 a²', 'a³', '(4/3) π a³', '2(ab + bc + ca)']}
+        ];
+
+        function generateQuestion() {
+            const q = questions[Math.floor(Math.random() * questions.length)];
+            document.getElementById('question').innerText = `Формула объёма для ${q.figure}?`;
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            const shuffledOpts = shuffle([...q.options]);
+            shuffledOpts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-outline-primary mb-2';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, q.correct);
+                optionsDiv.appendChild(btn);
+            });
+            document.getElementById('resultFormula').innerText = '';
+        }
+
+        function checkAnswer(selected, correct) {
+            const result = document.getElementById('resultFormula');
+            if (selected === correct) {
+                result.innerText = 'Правильно!';
+                result.className = 'alert alert-success';
+            } else {
+                result.innerText = `Неверно. Правильная: ${correct}.`;
+                result.className = 'alert alert-danger';
+            }
+        }
+
+        generateQuestion();
+
+        // Новый интерактив: Симуляция заполнения
+        function simulateFill() {
+            const shape = document.getElementById('fillShape').value;
+            const desiredVolume = parseFloat(document.getElementById('fillVolume').value);
+            if (isNaN(desiredVolume) || desiredVolume <= 0) {
+                alert('Введите положительный объём!');
+                return;
+            }
+            let actualVolume = 0, units = 0, explanation = '';
+            if (shape === 'cylinder') {
+                actualVolume = Math.PI * 5**2 * 10; // r=5, h=10
+                units = Math.ceil(desiredVolume / actualVolume);
+                explanation = `Для цилиндра (r=5, h=10) объём ≈${actualVolume.toFixed(2)} см³. Нужно ${units} таких цилиндров для ${desiredVolume} см³.`;
+            } else if (shape === 'sphere') {
+                actualVolume = (4/3) * Math.PI * 5**3;
+                units = Math.ceil(desiredVolume / actualVolume);
+                explanation = `Для сферы (r=5) объём ≈${actualVolume.toFixed(2)} см³. Нужно ${units} таких сфер для ${desiredVolume} см³.`;
+            }
+            const resultDiv = document.getElementById('resultFill');
+            resultDiv.innerHTML = explanation + '<br>Симуляция: Заполнено ' + (units * actualVolume).toFixed(2) + ' см³ (с избытком, если нужно).';
+            resultDiv.style.display = 'block';
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
