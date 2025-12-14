@@ -1,5 +1,5 @@
 
-body { font-family: Arial, sans-serif; background: #f0f4f8; }
+body { font-family: Arial, sans-serif; background: #f0f4f8; margin-bottom: 30px; }
 header { background: #007bff; color: white; padding: 20px; }
 nav a { color: white !important; margin: 0 15px; }
 .card { margin-bottom: 20px; }
