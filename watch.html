@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Просмотр - Stereometry Online</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <style>
+    .video-locked {
+        pointer-events: none; 
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="/">Stereometry<span class="text-dark">Online</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto" id="navLinks"></ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-4 main-page-content">
+    <div class="row">
+      <!-- Main Content -->
+      <div class="col-lg-8">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-body p-0">
+            <!-- Video Container Wrapper -->
+            <div id="videoContainerWrapper" class="ratio ratio-16x9 bg-dark overflow-hidden">
+               <!-- Native Video Player -->
+               <video id="player" controls controlsList="nodownload" oncontextmenu="return false;" class="w-100 h-100"></video>
+               <!-- YouTube/Vimeo Iframe (Hidden by default) -->
+               <div id="iframeContainer" class="d-none w-100 h-100">
+                  <iframe id="videoIframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen class="w-100 h-100"></iframe>
+               </div>
+            </div>
+            <!-- Server/Quality Selector -->
+            <div id="videoSourceSelector" class="bg-dark p-2 d-flex gap-2 overflow-auto d-none" style="border-top: 1px solid #333;">
+              <!-- Dynamic buttons -->
+            </div>
+          </div>
+          <div class="card-body">
+            <h2 id="videoTitle" class="mb-2">Загрузка...</h2>
+            <div class="d-flex align-items-center mb-4">
+              <span class="badge bg-secondary me-2" id="videoTopic">Тема</span>
+              <span class="text-muted small" id="videoDate"></span>
+            </div>
+            
+            <!-- Theory Content -->
+            <div class="card mb-4">
+              <div class="card-header bg-white fw-bold">Теория и Примеры</div>
+              <div class="card-body">
+                 <div id="videoContent" class="content-body">
+                   <p class="text-muted">Описание и теория к уроку...</p>
+                 </div>
+              </div>
+            </div>
+
+            <hr>
+
+            <h4 class="mb-3">Комментарии и вопросы</h4>
+            <div id="commentsList" class="mb-4"></div>
+            
+            <form id="commentForm">
+              <div class="mb-3">
+                <textarea class="form-control" name="content" rows="2" placeholder="Задайте вопрос или оставьте комментарий..." required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Отправить</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar (Assignments) -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Задания к уроку</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="list-group list-group-flush" id="assignmentsList">
+               <div class="p-3 text-muted text-center">Загрузка заданий...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('id');
+
+    if (!videoId) window.location.href = '/videos.html';
+
+    async function initWatch() {
+      try {
+        const data = await api(`/videos/${videoId}`);
+        const v = data.video;
+
+        document.title = v.title + ' - Stereometry';
+        document.getElementById('videoTitle').textContent = v.title;
+        document.getElementById('videoTopic').textContent = v.topic;
+        document.getElementById('videoDate').textContent = new Date(v.published_at).toLocaleDateString();
+        
+        const contentEl = document.getElementById('videoContent');
+        if (v.content) {
+           contentEl.innerHTML = v.content;
+        } else {
+           contentEl.innerHTML = `<p>${v.description || 'Нет описания.'}</p>`;
+        }
+    
+        const player = document.getElementById('player');
+        const iframeContainer = document.getElementById('iframeContainer');
+        const videoIframe = document.getElementById('videoIframe');
+        
+        // --- Multi-source Logic ---
+        let sources = [];
+        try {
+          sources = JSON.parse(v.url);
+          if (!Array.isArray(sources)) throw new Error();
+        } catch (e) {
+          sources = [{ label: 'Основной сервер', url: v.url }];
+        }
+
+        const selector = document.getElementById('videoSourceSelector');
+        if (sources.length > 1) {
+          selector.classList.remove('d-none');
+          selector.innerHTML = sources.map((s, idx) => `
+            <button class="btn btn-sm btn-outline-light source-btn ${idx===0?'active':''}" onclick="changeSource('${s.url}', this)">
+              ${s.label}
+            </button>
+          `).join('');
+        }
+
+        window.changeSource = (url, btn) => {
+          document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
+          if (btn) btn.classList.add('active');
+          
+          // Reset visibility
+          player.classList.add('d-none');
+          iframeContainer.classList.add('d-none');
+          player.pause();
+          videoIframe.src = '';
+
+          // 1. YouTube detection
+          const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+          if (ytMatch) {
+            iframeContainer.classList.remove('d-none');
+            videoIframe.src = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+            return;
+          }
+
+          // 2. Vimeo detection
+          const vimeoMatch = url.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/);
+          if (vimeoMatch) {
+            iframeContainer.classList.remove('d-none');
+            videoIframe.src = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+            return;
+          }
+
+          // 3. Native Video (Direct link or HLS)
+          player.classList.remove('d-none');
+          if (Hls.isSupported() && url.toLowerCase().includes('.m3u8')) {
+            const hls = new Hls();
+            hls.loadSource(url);
+            hls.attachMedia(player);
+          } else {
+            player.src = url;
+          }
+          player.play().catch(() => {});
+        };
+
+        // Load first source
+        changeSource(sources[0].url);
+
+        // Track Progress (Simple > 60s)
+        let tracked = false;
+        player.addEventListener('timeupdate', () => {
+          if (!tracked && player.currentTime > 60) {
+            tracked = true;
+            api('/profile/video-progress', 'POST', { video_id: videoId, status: 'watched', watched_seconds: Math.floor(player.currentTime) });
+          }
+        });
+
+        // Comments
+        renderComments(data.comments);
+
+        // Assignments
+        renderAssignments(data.assignments, data.submissions);
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderComments(comments) {
+      const list = document.getElementById('commentsList');
+      if (!comments || comments.length === 0) {
+        list.innerHTML = '<p class="text-muted small">Пока нет комментариев.</p>';
+        return;
+      }
+      list.innerHTML = comments.map(c => `
+        <div class="mb-3 border-bottom pb-2">
+          <div class="d-flex justify-content-between">
+            <strong>${c.user_name}</strong>
+            <small class="text-muted">${new Date(c.created_at).toLocaleDateString()}</small>
+          </div>
+          <p class="mb-0 small">${c.content}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderAssignments(assignments, submissions) {
+       const list = document.getElementById('assignmentsList');
+       if (!assignments || assignments.length === 0) {
+         list.innerHTML = '<div class="p-3 text-center text-muted">Нет заданий к этому уроку.</div>';
+         return;
+       }
+       
+       const subMap = {}; // assignment_id -> submission
+       if (submissions) submissions.forEach(s => subMap[s.assignment_id] = s);
+
+       let html = '';
+       assignments.forEach((a, index) => {
+         const sub = subMap[a.id];
+         let statusBadge = '<span class="badge bg-secondary">Не выполнено</span>';
+         let feedbackHtml = '';
+         let actionLabel = 'Выполнить';
+         
+         if (sub) {
+           if (sub.status === 'pending') statusBadge = '<span class="badge bg-warning text-dark">На проверке</span>';
+           else if (sub.status === 'graded') {
+             const color = sub.grade >= 3 ? 'success' : 'danger';
+             statusBadge = `<span class="badge bg-${color}">Оценка: ${sub.grade}</span>`;
+             if (sub.feedback) feedbackHtml = `<div class="alert alert-info mt-2 p-2 small"><b>Комментарий учителя:</b> ${sub.feedback}</div>`;
+           }
+           actionLabel = sub.status === 'graded' ? 'Пересдать' : 'Изменить ответ';
+         }
+
+         html += `
+           <div class="list-group-item">
+             <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+               <h6 class="mb-0">Задание #${index + 1} (${a.type === 'theory' ? 'Теория' : 'Практика'})</h6>
+               ${statusBadge}
+             </div>
+             <p class="mb-2 small"><b>${a.title}</b></p>
+             <div class="bg-light p-2 mb-2 rounded small">${a.content}</div>
+             ${feedbackHtml}
+             <button class="btn btn-outline-primary btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#assignForm${a.id}">
+               ${actionLabel}
+             </button>
+             <div class="collapse mt-2" id="assignForm${a.id}">
+               <textarea class="form-control mb-2 form-control-sm" id="ans-${a.id}" rows="3" placeholder="Введите ваш ответ...">${sub ? sub.content : ''}</textarea>
+               <button class="btn btn-success btn-sm w-100" onclick="submitAssignment(${a.id})">Отправить</button>
+             </div>
+           </div>
+         `;
+       });
+       list.innerHTML = html;
+    }
+
+    async function submitAssignment(id) {
+       const content = document.getElementById(`ans-${id}`).value;
+       if (!content) return alert('Введите ответ!');
+       try {
+         await api(`/assignments/${id}/submit`, 'POST', { content });
+         alert('Отправлено на проверку!');
+         location.reload();
+       } catch (e) { alert(e.message); }
+    }
+
+    document.getElementById('commentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      try {
+        const res = await api(`/videos/${videoId}/comments`, 'POST', data);
+        e.target.reset();
+        if (res.is_approved) {
+           location.reload(); 
+        } else {
+           alert('Комментарий отправлен на модерацию.');
+        }
+      } catch (err) { alert(err.message); }
+    });
+
+    document.addEventListener('DOMContentLoaded', initWatch);
+  </script>
+</body>
+</html>

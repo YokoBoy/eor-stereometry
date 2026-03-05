@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Видеоуроки - Stereometry Online</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="/">Stereometry<span class="text-dark">Online</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto" id="navLinks"></ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5 main-page-content">
+    <div class="row mb-4">
+      <div class="col-md-8">
+        <h2 class="fw-bold">Каталог видеоуроков</h2>
+        <p class="text-muted">Выберите раздел, чтобы увидеть список уроков.</p>
+      </div>
+      <div class="col-md-4">
+        <input type="text" class="form-control" placeholder="Поиск по урокам..." id="searchVideo">
+      </div>
+    </div>
+
+    <div id="videoList" class="accordion">
+      <!-- Accordion loaded here -->
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    async function initVideos() {
+      try {
+        // Ensure user progress is loaded for checkmarks
+        if (getToken()) {
+            try {
+                const p = await api('/profile/me');
+                if (p.completedVideoIds) {
+                    completedVideos = new Set(p.completedVideoIds);
+                }
+            } catch(e) { console.error('Failed to load progress', e); }
+        }
+
+        const videos = await api('/videos');
+        const list = document.getElementById('videoList');
+        
+        if (videos.length === 0) {
+          list.innerHTML = '<div class="text-center text-muted">Видео пока нет.</div>';
+          return;
+        }
+
+        // Group by Section
+        const sections = {};
+        videos.forEach(v => {
+          if (!sections[v.section]) sections[v.section] = [];
+          sections[v.section].push(v);
+        });
+
+        let html = '';
+        let index = 0;
+        for (const [secName, vids] of Object.entries(sections)) {
+          const id = 'collapse' + index;
+          html += `
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading${index}">
+                <button class="accordion-button ${index !== 0 ? 'collapsed' : ''}" type="button" data-bs-toggle="collapse" data-bs-target="#${id}" aria-expanded="${index === 0}" aria-controls="${id}">
+                  ${secName} <span class="badge bg-secondary ms-2">${vids.length} уроков</span>
+                </button>
+              </h2>
+              <div id="${id}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" aria-labelledby="heading${index}" data-bs-parent="#videoList">
+                <div class="accordion-body p-0">
+                  <div class="list-group list-group-flush">
+          `;
+          
+          vids.forEach(v => {
+            const isDone = completedVideos.has(v.id);
+            html += `
+              <a href="/watch.html?id=${v.id}" class="list-group-item list-group-item-action py-3">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">
+                    ${isDone ? '<span class="text-success me-2">✔</span>' : ''}
+                    ${v.title}
+                  </h5>
+                  <small>${v.is_free ? '<span class="text-success">Бесплатно</span>' : '<span class="text-warning">Премиум</span>'}</small>
+                </div>
+                <p class="mb-1 text-muted small">${v.description || 'Нет описания'}</p>
+                <small class="text-muted">Тема: ${v.topic}</small>
+              </a>
+            `;
+          });
+
+          html += `
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          index++;
+        }
+        list.innerHTML = html;
+
+        // Search filter logic
+        document.getElementById('searchVideo').addEventListener('input', (e) => {
+           const term = e.target.value.toLowerCase();
+           document.querySelectorAll('.list-group-item').forEach(item => {
+             const text = item.innerText.toLowerCase();
+             if (text.includes(term)) {
+               item.style.display = '';
+               // Ensure parent accordion is open if matched? Maybe too complex for now.
+             } else {
+               item.style.display = 'none';
+             }
+           });
+        });
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', initVideos);
+  </script>
+</body>
+</html>

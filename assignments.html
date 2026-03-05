@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Задания - Stereometry Online</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand" href="/">Stereometry<span class="text-dark">Online</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto" id="navLinks"></ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5 main-page-content">
+    <h2 class="fw-bold mb-4">Банк заданий</h2>
+    
+    <ul class="nav nav-tabs mb-4" id="assignTabs">
+      <li class="nav-item">
+        <button class="nav-link active" data-type="">Все</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-type="theory">Теория</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-type="practice">Практика</button>
+      </li>
+    </ul>
+
+    <div id="assignList" class="row g-4">
+      <!-- Loaded dynamically -->
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    async function loadAssignments(type = '') {
+      try {
+        const list = await api(`/assignments${type ? '?type='+type : ''}`);
+        const container = document.getElementById('assignList');
+        
+        if (list.length === 0) {
+          container.innerHTML = '<div class="col-12 text-center text-muted">Заданий пока нет.</div>';
+          return;
+        }
+
+        container.innerHTML = list.map(a => {
+          let statusBadge = '<span class="badge bg-secondary">Не выполнено</span>';
+          let feedbackHtml = '';
+          let actionLabel = 'Выполнить';
+
+          if (a.submission_status === 'pending') {
+            statusBadge = '<span class="badge bg-warning text-dark">На проверке</span>';
+            actionLabel = 'Изменить ответ';
+          } else if (a.submission_status === 'graded') {
+            const color = a.submission_grade >= 3 ? 'success' : 'danger';
+            statusBadge = `<span class="badge bg-${color}">Оценка: ${a.submission_grade}</span>`;
+            actionLabel = 'Пересдать';
+            if (a.submission_feedback) {
+              feedbackHtml = `<div class="alert alert-info mt-2 p-2 small"><b>Комментарий учителя:</b> ${a.submission_feedback}</div>`;
+            }
+          }
+
+          return `
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                     <h5 class="card-title">${a.title}</h5>
+                     <span class="badge bg-${a.type === 'theory' ? 'info' : 'warning'}">${a.type === 'theory' ? 'Теория' : 'Практика'}</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <p class="card-text text-muted small mb-0">Привязано к видео ID: ${a.video_id || 'Нет'}</p>
+                    ${statusBadge}
+                  </div>
+                  <p class="card-text">${a.content}</p>
+                  ${feedbackHtml}
+                  <div class="d-flex gap-2">
+                    ${a.video_id ? `<a href="/watch.html?id=${a.video_id}" class="btn btn-sm btn-outline-primary">Перейти к уроку</a>` : ''}
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#assignForm-${a.id}">
+                      ${actionLabel}
+                    </button>
+                  </div>
+                  <div class="collapse mt-2" id="assignForm-${a.id}">
+                    <textarea class="form-control mb-2 form-control-sm" id="ans-${a.id}" rows="3" placeholder="Введите ваш ответ...">${a.submission_content || ''}</textarea>
+                    <button class="btn btn-success btn-sm w-100" onclick="submitAssignment(${a.id})">Отправить</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    document.querySelectorAll('#assignTabs button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('#assignTabs button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        loadAssignments(e.target.dataset.type);
+      });
+    });
+
+    async function submitAssignment(id) {
+      const content = document.getElementById(`ans-${id}`).value;
+      if (!content) return alert('Введите ответ!');
+      try {
+        await api(`/assignments/${id}/submit`, 'POST', { content });
+        alert('Отправлено на проверку!');
+        loadAssignments(document.querySelector('#assignTabs .nav-link.active')?.dataset.type || '');
+      } catch (e) { alert(e.message); }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => loadAssignments());
+  </script>
+</body>
+</html>
