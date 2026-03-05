@@ -14,6 +14,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
+// Serve index.html for the root path
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Ignore favicon requests
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
