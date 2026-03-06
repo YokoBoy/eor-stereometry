@@ -122,6 +122,10 @@ async function init() {
     ? 'CREATE TABLE IF NOT EXISTS user_achievements (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, achievement_id INTEGER NOT NULL, earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(user_id, achievement_id), FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(achievement_id) REFERENCES achievements(id))'
     : 'CREATE TABLE IF NOT EXISTS user_achievements (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, achievement_id INTEGER NOT NULL, earned_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(user_id, achievement_id), FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(achievement_id) REFERENCES achievements(id))';
 
+  const commentsTable = isPostgres
+    ? 'CREATE TABLE IF NOT EXISTS comments (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, video_id INTEGER NOT NULL, content TEXT NOT NULL, is_approved INTEGER DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY(video_id) REFERENCES videos(id) ON DELETE CASCADE)'
+    : 'CREATE TABLE IF NOT EXISTS comments (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, video_id INTEGER NOT NULL, content TEXT NOT NULL, is_approved INTEGER DEFAULT 0, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY(video_id) REFERENCES videos(id) ON DELETE CASCADE)';
+
   await db.exec(usersTable);
   await db.exec(sectionsTable);
   await db.exec(videosTable);
@@ -130,6 +134,7 @@ async function init() {
   await db.exec(progressTable);
   await db.exec(achievementsTable);
   await db.exec(userAchievementsTable);
+  await db.exec(commentsTable);
 
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@local';
   const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
