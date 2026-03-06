@@ -58,11 +58,16 @@ router.post('/:id/comments', requireAuth, async (req, res) => {
   const { content } = req.body;
   if (!content) return res.status(400).json({ error: 'empty' });
   
-  // Auto-approve if admin, else pending
-  const isApproved = req.user.role === 'admin' ? 1 : 0;
-  
-  const info = await db.run('INSERT INTO comments (user_id, video_id, content, is_approved) VALUES (?, ?, ?, ?)', [req.user.id, id, content, isApproved]);
-  res.json({ id: info.lastInsertRowid, is_approved: isApproved });
+  try {
+    // Auto-approve if admin, else pending
+    const isApproved = req.user.role === 'admin' ? 1 : 0;
+    
+    const info = await db.run('INSERT INTO comments (user_id, video_id, content, is_approved) VALUES (?, ?, ?, ?)', [req.user.id, id, content, isApproved]);
+    res.json({ id: info.lastInsertRowid, is_approved: isApproved });
+  } catch (error) {
+    console.error('Error posting comment:', error);
+    res.status(500).json({ error: 'Internal server error: ' + error.message });
+  }
 });
 
 router.post('/', requireAuth, requireAdmin, async (req, res) => {
