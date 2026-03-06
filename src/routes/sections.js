@@ -42,23 +42,17 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
 // Delete section (Admin)
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const sec = await db.get('SELECT id FROM sections WHERE id = ?', [id]);
-  if (!sec) return res.status(404).json({ error: 'not_found' });
-  
-  const videos = await db.all('SELECT id FROM videos WHERE section_id = ?', [id]);
-  for (const v of videos) {
-    // Delete all submissions for all assignments of this video
-    const assignments = await db.all('SELECT id FROM assignments WHERE video_id = ?', [v.id]);
-    for (const a of assignments) {
-      await db.run('DELETE FROM submissions WHERE assignment_id = ?', [a.id]);
-    }
-    await db.run('DELETE FROM assignments WHERE video_id = ?', [v.id]);
-    await db.run('DELETE FROM comments WHERE video_id = ?', [v.id]);
-    await db.run('DELETE FROM progress WHERE video_id = ?', [v.id]);
-    await db.run('DELETE FROM videos WHERE id = ?', [v.id]);
+  try {
+    const sec = await db.get('SELECT id FROM sections WHERE id = ?', [id]);
+    if (!sec) return res.status(404).json({ error: 'not_found' });
+    
+    // With ON DELETE CASCADE, we only need to delete the section itself
+    await db.run('DELETE FROM sections WHERE id = ?', [id]);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Delete section error:', error);
+    res.status(500).json({ error: 'Internal server error: ' + error.message });
   }
-  await db.run('DELETE FROM sections WHERE id = ?', [id]);
-  res.json({ ok: true });
 });
 
 module.exports = router;

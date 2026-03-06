@@ -33,8 +33,8 @@ router.get('/:id', requireAuth, async (req, res) => {
     // User Submission status for these assignments
     let submissions = [];
     if (assignments.length > 0) {
-      const placeholders = assignments.map(() => '?').join(',');
-      submissions = await db.all(`SELECT * FROM submissions WHERE user_id = ? AND assignment_id IN (${placeholders})`, [req.user.id, ...assignments.map(a => a.id)]);
+      // Use simpler query to avoid IN (?) issues with multiple values
+      submissions = await db.all('SELECT * FROM submissions WHERE user_id = ? AND assignment_id IN (SELECT id FROM assignments WHERE video_id = ?)', [req.user.id, id]);
     }
     
     // Comments
@@ -49,7 +49,7 @@ router.get('/:id', requireAuth, async (req, res) => {
     res.json({ video: v, assignments, submissions, comments });
   } catch (error) {
     console.error('Error fetching video detail:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error: ' + error.message });
   }
 });
 
@@ -106,26 +106,18 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
 
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const v = await db.get('SELECT id FROM videos WHERE id = ?', [id]);
-  if (!v) return res.status(404).json({ error: 'not_found' });
+  try {
+    const v = await db.get('SELECT id FROM videos WHERE id = ?', [id]);
+    if (!v) return res.status(404).json({ error: 'not_found' });
 
-  // Get all assignments for this video
-  const assignments = await db.all('SELECT id FROM assignments WHERE video_id = ?', [id]);
-  const assignIds = assignments.map(a => a.id);
-
-  if (assignIds.length > 0) {
-    // Delete all submissions for these assignments
-    for (const aid of assignIds) {
-      await db.run('DELETE FROM submissions WHERE assignment_id = ?', [aid]);
-    }
-    // Delete all assignments for this video
-    await db.run('DELETE FROM assignments WHERE video_id = ?', [id]);
+    // With ON DELETE CASCADE in Postgres, deleting the video will automatically
+    // delete progress, comments, and assignments (and their submissions).
+    await db.run('DELETE FROM videos WHERE id = ?', [id]);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Delete video error:', error);
+    res.status(500).json({ error: 'Internal server error: ' + error.message });
   }
-
-  await db.run('DELETE FROM comments WHERE video_id = ?', [id]);
-  await db.run('DELETE FROM progress WHERE video_id = ?', [id]);
-  await db.run('DELETE FROM videos WHERE id = ?', [id]);
-  res.json({ ok: true });
 });
 
 // Admin comments routes
