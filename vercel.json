@@ -22,6 +22,10 @@
       "use": "@vercel/static"
     },
     {
+      "src": "manifest.json",
+      "use": "@vercel/static"
+    },
+    {
       "src": "*.ico",
       "use": "@vercel/static"
     }

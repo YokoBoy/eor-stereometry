@@ -79,8 +79,9 @@
         // Group by Section
         const sections = {};
         videos.forEach(v => {
-          if (!sections[v.section]) sections[v.section] = [];
-          sections[v.section].push(v);
+          const secName = v.section_name || 'Без раздела';
+          if (!sections[secName]) sections[secName] = [];
+          sections[secName].push(v);
         });
 
         let html = '';

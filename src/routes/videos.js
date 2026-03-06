@@ -97,9 +97,24 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
 
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
+  const v = await db.get('SELECT id FROM videos WHERE id = ?', [id]);
+  if (!v) return res.status(404).json({ error: 'not_found' });
+
+  // Get all assignments for this video
+  const assignments = await db.all('SELECT id FROM assignments WHERE video_id = ?', [id]);
+  const assignIds = assignments.map(a => a.id);
+
+  if (assignIds.length > 0) {
+    // Delete all submissions for these assignments
+    for (const aid of assignIds) {
+      await db.run('DELETE FROM submissions WHERE assignment_id = ?', [aid]);
+    }
+    // Delete all assignments for this video
+    await db.run('DELETE FROM assignments WHERE video_id = ?', [id]);
+  }
+
   await db.run('DELETE FROM comments WHERE video_id = ?', [id]);
   await db.run('DELETE FROM progress WHERE video_id = ?', [id]);
-  await db.run('DELETE FROM assignments WHERE video_id = ?', [id]);
   await db.run('DELETE FROM videos WHERE id = ?', [id]);
   res.json({ ok: true });
 });

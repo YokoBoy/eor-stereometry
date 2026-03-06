@@ -38,8 +38,9 @@ if (dbUrl) {
     },
     async run(text, params = []) {
       const sql = convertPlaceholders(text);
-      // For Postgres, we often need RETURNING id to get lastInsertRowid
-      const res = await pool.query(sql.includes('RETURNING') ? sql : sql + ' RETURNING id', params);
+      const isInsert = sql.trim().toUpperCase().startsWith('INSERT');
+      const finalSql = (isInsert && !sql.toUpperCase().includes('RETURNING')) ? sql + ' RETURNING id' : sql;
+      const res = await pool.query(finalSql, params);
       return { lastInsertRowid: res.rows[0] ? res.rows[0].id : null, changes: res.rowCount };
     },
     async exec(text) {
@@ -148,15 +149,17 @@ async function init() {
 
   // Seed data if empty
   const videoCountQuery = 'SELECT COUNT(*) AS c FROM videos';
-  const videoCount = (await db.get(videoCountQuery)).c;
+  const vCountRes = await db.get(videoCountQuery);
+  const videoCount = vCountRes ? vCountRes.c : 0;
   
   if (parseInt(videoCount) === 0) {
+    console.log('Seeding initial data...');
     const seedSection = isPostgres
       ? 'INSERT INTO sections (title, order_index) VALUES ($1, $2) RETURNING id'
       : 'INSERT INTO sections (title, order_index) VALUES (?, ?)';
     
     const secResult = await db.run(seedSection, ['Основы', 1]);
-    const secId = isPostgres ? secResult.lastInsertRowid : secResult.lastInsertRowid;
+    const secId = secResult.lastInsertRowid;
 
     const seedVideo = isPostgres
       ? 'INSERT INTO videos (title, section_id, topic, description, url, is_free) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id'
@@ -169,8 +172,13 @@ async function init() {
       ? 'INSERT INTO assignments (video_id, type, title, content) VALUES ($1, $2, $3, $4)'
       : 'INSERT INTO assignments (video_id, type, title, content) VALUES (?, ?, ?, ?)';
     
-    await db.run(seedAssign, [v1.lastInsertRowid, 'theory', 'Основные аксиомы', 'Прочитайте главу 1 и выпишите 3 аксиомы.']);
-    await db.run(seedAssign, [v2.lastInsertRowid, 'practice', 'Задача на объём', 'Вычислите объём призмы с высотой 10 и площадью основания 5.']);
+    if (v1.lastInsertRowid) {
+      await db.run(seedAssign, [v1.lastInsertRowid, 'theory', 'Основные аксиомы', 'Прочитайте главу 1 и выпишите 3 аксиомы.']);
+    }
+    if (v2.lastInsertRowid) {
+      await db.run(seedAssign, [v2.lastInsertRowid, 'practice', 'Задача на объём', 'Вычислите объём призмы с высотой 10 и площадью основания 5.']);
+    }
+    console.log('Seeding completed.');
   }
 }
 
