@@ -6,27 +6,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.css",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.js",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "manifest.json",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.ico",
+      "src": "**/*.{html,css,js,png,jpg,jpeg,gif,svg,ico,json,xml}",
       "use": "@vercel/static"
     }
   ],
@@ -40,16 +20,24 @@
       "dest": "/favicon.ico"
     },
     {
+      "src": "/src/media/img/(.*)",
+      "dest": "/src/media/img/$1"
+    },
+    {
       "src": "/(index|login|profile|videos|assignments|watch|admin|about)\\.html",
       "dest": "/$1.html"
     },
     {
-      "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|svg|json|xml)",
+      "src": "/(.*)\\.(js|css|png|jpg|jpeg|gif|svg|json|xml|ico)",
       "dest": "/$1.$2"
     },
     {
       "src": "/",
       "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
     }
   ]
 }

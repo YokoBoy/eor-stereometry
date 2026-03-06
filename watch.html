@@ -115,6 +115,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="app.js"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', initWatch);
+    
     const urlParams = new URLSearchParams(window.location.search);
     const videoId = urlParams.get('id');
 
@@ -199,7 +201,11 @@
         };
 
         // Load first source
-        changeSource(sources[0].url);
+        if (sources.length > 0) {
+            changeSource(sources[0].url);
+        } else {
+            document.getElementById('videoContainerWrapper').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-white">Видео не найдено или недоступно</div>';
+        }
 
         // Track Progress (Simple > 60s)
         let tracked = false;
