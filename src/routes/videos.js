@@ -23,25 +23,34 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
-  const v = await db.get('SELECT v.*, s.title as section_name FROM videos v LEFT JOIN sections s ON v.section_id = s.id WHERE v.id = ?', [id]);
-  if (!v) return res.status(404).json({ error: 'not_found' });
-  
-  // Assignments
-  const assignments = await db.all('SELECT * FROM assignments WHERE video_id = ?', [id]);
+  try {
+    const v = await db.get('SELECT v.*, s.title as section_name FROM videos v LEFT JOIN sections s ON v.section_id = s.id WHERE v.id = ?', [id]);
+    if (!v) return res.status(404).json({ error: 'not_found' });
+    
+    // Assignments
+    const assignments = await db.all('SELECT * FROM assignments WHERE video_id = ?', [id]);
 
-  // User Submission status for these assignments
-  const submissions = await db.all('SELECT * FROM submissions WHERE user_id = ? AND assignment_id IN (SELECT id FROM assignments WHERE video_id = ?)', [req.user.id, id]);
-  
-  // Comments
-  const comments = await db.all(`
-    SELECT c.id, c.content, c.created_at, u.name as user_name, c.user_id 
-    FROM comments c 
-    JOIN users u ON c.user_id = u.id 
-    WHERE c.video_id = ? AND c.is_approved = 1 
-    ORDER BY c.created_at DESC
-  `, [id]);
+    // User Submission status for these assignments
+    let submissions = [];
+    if (assignments.length > 0) {
+      const placeholders = assignments.map(() => '?').join(',');
+      submissions = await db.all(`SELECT * FROM submissions WHERE user_id = ? AND assignment_id IN (${placeholders})`, [req.user.id, ...assignments.map(a => a.id)]);
+    }
+    
+    // Comments
+    const comments = await db.all(`
+      SELECT c.id, c.content, c.created_at, u.name as user_name, c.user_id 
+      FROM comments c 
+      JOIN users u ON c.user_id = u.id 
+      WHERE c.video_id = ? AND c.is_approved = 1 
+      ORDER BY c.created_at DESC
+    `, [id]);
 
-  res.json({ video: v, assignments, submissions, comments });
+    res.json({ video: v, assignments, submissions, comments });
+  } catch (error) {
+    console.error('Error fetching video detail:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 router.post('/:id/comments', requireAuth, async (req, res) => {
