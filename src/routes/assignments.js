@@ -88,7 +88,7 @@ router.post('/:id/submit', requireAuth, upload.single('file'), async (req, res) 
           const blob = await put(filename, req.file.buffer, { access: 'public', token: process.env.BLOB_READ_WRITE_TOKEN });
           fileUrl = blob.url;
       } catch (e) {
-          return res.status(500).json({ error: 'file_upload_error' });
+          return res.status(500).json({ error: 'file_upload_error - ' + e.message });
       }
   }
 
