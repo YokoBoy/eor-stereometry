@@ -50,6 +50,9 @@
       <li class="nav-item">
         <button class="nav-link" data-type="practice">Практика</button>
       </li>
+      <li class="nav-item">
+        <button class="nav-link" data-type="test">Тесты</button>
+      </li>
     </ul>
 
     <div id="assignList" class="row g-4">
@@ -87,19 +90,40 @@
             }
           }
 
+          let assignmentBody = `<p class="card-text">${a.content}</p>`;
+          let submitForm = `
+             <textarea class="form-control mb-2 form-control-sm" id="ans-${a.id}" rows="3" placeholder="Введите ваш ответ...">${a.submission_content || ''}</textarea>
+             <input type="file" id="file-${a.id}" class="form-control form-control-sm mb-2" accept=".jpg,.jpeg,.png,.pdf,.docx,.doc">
+             ${a.submission_file_url ? `<a href="${a.submission_file_url}" target="_blank" class="small d-block mb-2"><i class="fas fa-paperclip"></i> Текущий прикрепленный файл</a>` : ''}
+          `;
+
+          if (a.type === 'test') {
+             try {
+                const td = JSON.parse(a.content);
+                assignmentBody = `<div class="bg-light p-2 mb-2 rounded small fw-bold">${td.question}</div>`;
+                const opts = td.options.map((opt, i) => `
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="test-${a.id}" id="test-${a.id}-${i}" value="${i}">
+                      <label class="form-check-label" for="test-${a.id}-${i}">${opt}</label>
+                    </div>
+                `).join('');
+                submitForm = `<div class="mb-3">${opts}</div>`;
+             } catch(e) {}
+          }
+
           return `
             <div class="col-md-6">
               <div class="card h-100">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-start mb-2">
                      <h5 class="card-title">${a.title}</h5>
-                     <span class="badge bg-${a.type === 'theory' ? 'info' : 'warning'}">${a.type === 'theory' ? 'Теория' : 'Практика'}</span>
+                     <span class="badge bg-${a.type === 'theory' ? 'info' : a.type === 'test' ? 'danger' : 'warning'}">${a.type === 'theory' ? 'Теория' : a.type === 'test' ? 'Тест' : 'Практика'}</span>
                   </div>
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <p class="card-text text-muted small mb-0">Привязано к видео ID: ${a.video_id || 'Нет'}</p>
                     ${statusBadge}
                   </div>
-                  <p class="card-text">${a.content}</p>
+                  ${assignmentBody}
                   ${feedbackHtml}
                   <div class="d-flex gap-2">
                     ${a.video_id ? `<a href="/watch.html?id=${a.video_id}" class="btn btn-sm btn-outline-primary">Перейти к уроку</a>` : ''}
@@ -108,7 +132,7 @@
                     </button>
                   </div>
                   <div class="collapse mt-2" id="assignForm-${a.id}">
-                    <textarea class="form-control mb-2 form-control-sm" id="ans-${a.id}" rows="3" placeholder="Введите ваш ответ...">${a.submission_content || ''}</textarea>
+                    ${submitForm}
                     <button class="btn btn-success btn-sm w-100" onclick="submitAssignment(${a.id})">Отправить</button>
                   </div>
                 </div>
@@ -131,13 +155,37 @@
     });
 
     async function submitAssignment(id) {
-      const content = document.getElementById(`ans-${id}`).value;
-      if (!content) return alert('Введите ответ!');
-      try {
-        await api(`/assignments/${id}/submit`, 'POST', { content });
-        alert('Отправлено на проверку!');
-        loadAssignments(document.querySelector('#assignTabs .nav-link.active')?.dataset.type || '');
-      } catch (e) { alert(e.message); }
+       const fileInput = document.getElementById(`file-${id}`);
+       let content = '';
+       
+       const testOptions = document.querySelectorAll(`input[name="test-${id}"]:checked`);
+       if (testOptions.length > 0) {
+           content = testOptions[0].value;
+       } else {
+           const ansInput = document.getElementById(`ans-${id}`);
+           if (ansInput) content = ansInput.value;
+       }
+
+       const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+       if (!content && !file) return alert('Введите ответ или прикрепите файл!');
+       
+       const formData = new FormData();
+       if (content) formData.append('content', content);
+       if (file) formData.append('file', file);
+
+       try {
+         const t = localStorage.getItem('token');
+         const r = await fetch(`/api/assignments/${id}/submit`, {
+             method: 'POST',
+             headers: t ? { 'Authorization': 'Bearer ' + t } : {},
+             body: formData
+         });
+         const data = await r.json();
+         if (!r.ok) throw new Error(data.error || 'error');
+
+         alert(data.grade !== null ? 'Тест проверен! Оценка: ' + data.grade : 'Отправлено на проверку!');
+         loadAssignments(document.querySelector('#assignTabs .nav-link.active')?.dataset.type || '');
+       } catch (e) { alert(e.message); }
     }
 
     document.addEventListener('DOMContentLoaded', () => loadAssignments());
