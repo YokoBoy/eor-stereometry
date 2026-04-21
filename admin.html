@@ -24,6 +24,7 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
   <meta name="theme-color" content="#ffffff">
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <style>
     :root {
       --sidebar-width: 260px;
@@ -284,8 +285,8 @@
                 <textarea class="form-control" name="description" rows="2" placeholder="Краткий анонс для списка..."></textarea>
               </div>
               <div class="mb-4">
-                <label class="form-label fw-bold small">Теоретический контент (HTML)</label>
-                <textarea class="form-control" name="content" rows="6" placeholder="Полный текст урока, формулы, изображения..."></textarea>
+                <label class="form-label fw-bold small">Теоретический контент (Урок)</label>
+                <div id="quill-editor" style="height: 250px; background: #fff;"></div>
               </div>
               
               <div class="d-grid">
@@ -359,9 +360,10 @@
                 </div>
                 <div class="col-md-3 mb-3">
                   <label class="form-label fw-bold small">Тип задания</label>
-                  <select class="form-select" name="type">
+                  <select class="form-select" name="type" id="assignTypeSelect" onchange="toggleTestBuilder()">
                     <option value="theory">Теоретический вопрос</option>
                     <option value="practice">Практическая задача</option>
+                    <option value="test">Тест (Автопроверка)</option>
                   </select>
                 </div>
                 <div class="col-md-3 mb-3">
@@ -369,9 +371,27 @@
                   <input type="text" class="form-control" name="title" required>
                 </div>
               </div>
-              <div class="mb-3">
+              <div class="mb-3" id="standardAssignFields">
                 <label class="form-label fw-bold small">Условие задания</label>
-                <textarea class="form-control" name="content" rows="4" required></textarea>
+                <textarea class="form-control" name="content" id="assignContent" rows="4"></textarea>
+              </div>
+              <div class="mb-3 d-none" id="testBuilderFields">
+                 <div class="border p-3 rounded bg-light">
+                    <label class="form-label fw-bold small">Вопрос теста</label>
+                    <input type="text" class="form-control mb-3" id="testQuestion">
+                    <label class="form-label fw-bold small">Варианты ответов</label>
+                    <div id="testOptionsContainer">
+                       <div class="input-group mb-2 test-opt">
+                          <div class="input-group-text"><input type="radio" name="testCorrect" value="0" checked></div>
+                          <input type="text" class="form-control" placeholder="Вариант 1">
+                       </div>
+                       <div class="input-group mb-2 test-opt">
+                          <div class="input-group-text"><input type="radio" name="testCorrect" value="1"></div>
+                          <input type="text" class="form-control" placeholder="Вариант 2">
+                       </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addTestOption()">+ Добавить вариант</button>
+                 </div>
               </div>
               <button type="submit" class="btn btn-primary w-100" id="saveAssignBtn">
                 <i class="fas fa-plus me-2"></i> Создать задание
@@ -533,8 +553,15 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
   <script src="app.js"></script>
   <script>
+    var quill = new Quill('#quill-editor', {
+      theme: 'snow',
+      modules: { toolbar: [ [{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['link', 'image', 'video'], ['clean'] ] },
+      placeholder: 'Полный текст урока, формулы, изображения...'
+    });
+
     // Tab Switching Logic
     document.querySelectorAll('.nav-link-custom[data-tab]').forEach(link => {
       link.addEventListener('click', (e) => {
@@ -918,7 +945,7 @@
       f.topic.value = v.topic;
       f.duration.value = v.duration || '';
       f.description.value = v.description || '';
-      f.content.value = v.content || '';
+      quill.root.innerHTML = v.content || '';
       document.getElementById('isFreeCheck').checked = (v.is_free === 1);
       
       setUrlsData(v.url);
@@ -932,6 +959,7 @@
     function cancelVideoEdit() {
       editingVideoId = null;
       document.getElementById('addVideoForm').reset();
+      quill.root.innerHTML = '';
       setUrlsData('');
       document.getElementById('videoFormTitle').textContent = 'Добавить видеоурок';
       document.getElementById('saveVideoBtn').innerHTML = '<i class="fas fa-save me-2"></i> Сохранить урок';
@@ -944,6 +972,7 @@
       const data = Object.fromEntries(formData.entries());
       data.is_free = document.getElementById('isFreeCheck').checked ? 1 : 0;
       data.url = getUrlsData();
+      data.content = quill.root.innerHTML === '<p><br></p>' ? '' : quill.root.innerHTML;
       
       try {
         if (editingVideoId) {
@@ -1004,9 +1033,25 @@
        
        const f = document.getElementById('addAssignForm');
        f.video_id.value = a.video_id || '';
-       f.type.value = a.type;
-       f.title.value = a.title;
-       f.content.value = a.content;
+       document.getElementById('assignTypeSelect').value = a.type;
+       
+       if (a.type === 'test') {
+           try {
+             const tData = JSON.parse(a.content);
+             document.getElementById('testQuestion').value = tData.question;
+             const container = document.getElementById('testOptionsContainer');
+             container.innerHTML = tData.options.map((opt, i) => `
+                <div class="input-group mb-2 test-opt">
+                    <div class="input-group-text"><input type="radio" name="testCorrect" value="${i}" ${i == tData.correct ? 'checked' : ''}></div>
+                    <input type="text" class="form-control" value="${opt}">
+                    ${i > 1 ? `<button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
+             `).join('');
+           } catch(e){}
+       } else {
+           document.getElementById('assignContent').value = a.content;
+       }
+       if (typeof toggleTestBuilder === 'function') toggleTestBuilder();
        
        document.getElementById('assignFormTitle').textContent = 'Редактировать задание';
        document.getElementById('saveAssignBtn').innerHTML = '<i class="fas fa-save me-2"></i> Сохранить изменения';
@@ -1015,8 +1060,10 @@
 
     function cancelAssignEdit() {
       editingAssignId = null;
-      document.getElementById('addAssignForm').reset();
-      document.getElementById('assignFormTitle').textContent = 'Создать задание';
+       document.getElementById('addAssignForm').reset();
+       document.getElementById('assignTypeSelect').value = 'theory';
+       if (typeof toggleTestBuilder === 'function') toggleTestBuilder();
+       document.getElementById('assignFormTitle').textContent = 'Создать задание';
       document.getElementById('saveAssignBtn').innerHTML = '<i class="fas fa-plus me-2"></i> Создать задание';
       document.getElementById('cancelAssignEditBtn').classList.add('d-none');
     }
@@ -1025,6 +1072,19 @@
       e.preventDefault();
       const formData = new FormData(e.target);
       const data = Object.fromEntries(formData.entries());
+      const typeSelect = document.getElementById('assignTypeSelect');
+      if (typeSelect && typeSelect.value === 'test') {
+         const question = document.getElementById('testQuestion').value;
+         const optInputs = document.querySelectorAll('#testOptionsContainer .test-opt input[type="text"]');
+         const options = Array.from(optInputs).map(i => i.value);
+         const correctRadio = document.querySelector('input[name="testCorrect"]:checked');
+         data.content = JSON.stringify({ question, options, correct: correctRadio ? correctRadio.value : 0 });
+         data.type = 'test';
+      } else {
+         const cval = document.getElementById('assignContent').value;
+         if (cval) data.content = cval;
+         data.type = typeSelect ? typeSelect.value : 'theory';
+      }
       try {
         if (editingAssignId) {
            await api(`/assignments/${editingAssignId}`, 'PATCH', data);
@@ -1057,6 +1117,7 @@
             </div>
             <div class="mb-2">Студент: <b>${s.user_name}</b> <span class="text-muted small">(${s.user_email})</span></div>
             <div class="bg-light p-3 mb-3 border rounded small" style="white-space: pre-wrap;">${s.content}</div>
+            ${s.file_url ? `<div class="mb-3"><a href="${s.file_url}" target="_blank" class="btn btn-sm btn-outline-info"><i class="fas fa-file-download"></i> Скачать / Посмотреть файл решения</a></div>` : ''}
             <div class="row g-2">
               <div class="col-md-3">
                 <select class="form-select form-select-sm" id="grade-${s.id}">
@@ -1126,6 +1187,26 @@
         await api(`/videos/comments/${id}`, 'DELETE');
         loadPendingComments();
       } catch (e) { alert(e.message); }
+    }
+
+    function toggleTestBuilder() {
+       const type = document.getElementById('assignTypeSelect').value;
+       if (type === 'test') {
+           document.getElementById('standardAssignFields').classList.add('d-none');
+           document.getElementById('testBuilderFields').classList.remove('d-none');
+       } else {
+           document.getElementById('standardAssignFields').classList.remove('d-none');
+           document.getElementById('testBuilderFields').classList.add('d-none');
+       }
+    }
+    
+    function addTestOption() {
+       const container = document.getElementById('testOptionsContainer');
+       const count = container.querySelectorAll('.test-opt').length;
+       const div = document.createElement('div');
+       div.className = 'input-group mb-2 test-opt';
+       div.innerHTML = `<div class="input-group-text"><input type="radio" name="testCorrect" value="${count}"></div><input type="text" class="form-control" placeholder="Вариант ${count+1}"><button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>`;
+       container.appendChild(div);
     }
   </script>
 </body>

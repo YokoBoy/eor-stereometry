@@ -1,6 +1,26 @@
 const express = require('express');
 const { db } = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) { cb(null, 'uploads/'); },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ 
+  storage,
+  fileFilter: function (req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if(ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg' && ext !== '.pdf' && ext !== '.doc' && ext !== '.docx') {
+        return cb(new Error('Только картинки, PDF и DOCX разрешены!'));
+    }
+    cb(null, true);
+  }
+});
 
 const router = express.Router();
 
@@ -11,7 +31,8 @@ router.get('/', requireAuth, async (req, res) => {
            s.status as submission_status,
            s.grade as submission_grade,
            s.feedback as submission_feedback,
-           s.content as submission_content
+           s.content as submission_content,
+           s.file_url as submission_file_url
     FROM assignments a
     LEFT JOIN videos v ON a.video_id = v.id
     LEFT JOIN submissions s ON s.assignment_id = a.id AND s.user_id = ?
@@ -60,19 +81,38 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // Submit assignment (Student)
-router.post('/:id/submit', requireAuth, async (req, res) => {
+router.post('/:id/submit', requireAuth, upload.single('file'), async (req, res) => {
   const { id } = req.params;
   const { content } = req.body;
-  if (!content) return res.status(400).json({ error: 'content_required' });
+  const fileUrl = req.file ? '/uploads/' + req.file.filename : null;
+
+  if (!content && !fileUrl) return res.status(400).json({ error: 'content_required' });
   
-  // Check if exists
+  const a = await db.get('SELECT * FROM assignments WHERE id = ?', [id]);
+  if (!a) return res.status(404).json({ error: 'not_found' });
+
+  let status = 'pending';
+  let grade = null;
+
+  if (a.type === 'test') {
+    try {
+      const testData = JSON.parse(a.content);
+      if (parseInt(content, 10) === parseInt(testData.correct, 10)) {
+         grade = 5;
+      } else {
+         grade = 2;
+      }
+      status = 'graded';
+    } catch(e) {}
+  }
+
   const exist = await db.get('SELECT id FROM submissions WHERE user_id = ? AND assignment_id = ?', [req.user.id, id]);
   if (exist) {
-    await db.run("UPDATE submissions SET content = ?, status = 'pending', grade = NULL, created_at = CURRENT_TIMESTAMP WHERE id = ?", [content, exist.id]);
+    await db.run("UPDATE submissions SET content = ?, file_url = COALESCE(?, file_url), status = ?, grade = ?, created_at = CURRENT_TIMESTAMP WHERE id = ?", [content || '', fileUrl, status, grade, exist.id]);
   } else {
-    await db.run('INSERT INTO submissions (user_id, assignment_id, content) VALUES (?, ?, ?)', [req.user.id, id, content]);
+    await db.run('INSERT INTO submissions (user_id, assignment_id, content, file_url, status, grade) VALUES (?, ?, ?, ?, ?, ?)', [req.user.id, id, content || '', fileUrl, status, grade]);
   }
-  res.json({ ok: true });
+  res.json({ ok: true, grade });
 });
 
 // Get submissions (Admin)

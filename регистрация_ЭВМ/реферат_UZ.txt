@@ -1,0 +1,29 @@
+REFERAT
+
+Kompyuter dasturi va ma’lumotlar bazasi uchun: «StereometryOnline gamifikatsiya elementlariga ega stereometriya bo‘yicha elektron ta’lim resursi».
+
+Mualliflar: Mirzaeva Sabina Mukhtarovna
+Mualliflik huquqi egalari: Mirzaeva Sabina Mukhtarovna
+
+Yaratilgan sana: 2026 yil 21 aprel.
+
+Annotatsiya:
+
+Dasturning maqsadi. «StereometryOnline» ta’lim platformasining asosiy maqsadi — o‘quvchilar va talabalar tomonidan stereometriyani o‘rganishning samarali jarayonini ta’minlashdir. Maqsad — zamonaviy veb-texnologiyalar va o‘yin mexanikalaridan foydalangan holda o‘quv jarayonini interaktiv, ko‘rgazmali va motivatsion qilishdir.
+
+Qo‘llash sohasi. Ta’lim muassasalari (maktablar, kollejlar, oliy o‘quv yurtlari), qo‘shimcha ta’lim markazlari, masofaviy ta’lim platformalari.
+
+Funktsionalligi. Dastur Node.js platformasi va Express.js freymvorkidan foydalangan holda JavaScript dasturlash tilida yozilgan. Veb-ilovadan Windows, MacOS, Linux, Android va iOS operatsion tizimlarida ishlaydigan brauzerlarda foydalanish mumkin.
+Asosiy funktsiyalarga quyidagilar kiradi:
+1. JWT va parollarni shifrlashdan foydalangan holda foydalanuvchilarni avtorizatsiya va autentifikatsiya qilish tizimi.
+2. Oqimli video (HLS) qo‘llab-quvvatlanadigan stereometriyaning turli bo‘limlari (prizmalar, piramidalar va boshqalar) bo‘yicha o‘quv video darslarini ko‘rish.
+3. Yechimlarni yuborish imkoniyatiga ega interaktiv topshiriqlar tizimi (nazariy va amaliy).
+4. Gamifikatsiya moduli: videolarni ko‘rish va topshiriqlarni bajarish uchun ballar berish, yutuqlar (achievement) tizimi.
+5. O‘quv jarayoni va olingan mukofotlar vizualizatsiyasi bilan foydalanuvchining shaxsiy kabineti.
+6. Kontentni, foydalanuvchilarni boshqarish va topshiriqlarni tekshirish uchun administrator paneli.
+7. O‘quvchilar va o‘qituvchi o‘rtasidagi hamkorlik uchun video darslarga izoh qoldirish tizimi.
+
+Kompyuter turi: Shaxsiy kompyuter (Windows, Mac, Linux), mobil qurilmalar (Android, iOS).
+Dasturlash tili: JavaScript (ES6+), HTML5, CSS3.
+Operatsion tizim: Zamonaviy veb-brauzerni (Chrome, Firefox, Safari, Edge) qo‘llab-quvvatlaydigan har qanday OT.
+Ma'lumotlar bazasi bilan dasturning hajmi: 15.2 MB.

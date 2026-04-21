@@ -107,8 +107,8 @@ async function init() {
     : 'CREATE TABLE IF NOT EXISTS assignments (id INTEGER PRIMARY KEY AUTOINCREMENT, video_id INTEGER, type TEXT NOT NULL, title TEXT NOT NULL, content TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(video_id) REFERENCES videos(id) ON DELETE CASCADE)';
 
   const submissionsTable = isPostgres
-    ? 'CREATE TABLE IF NOT EXISTS submissions (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, assignment_id INTEGER NOT NULL, content TEXT, grade INTEGER, feedback TEXT, status TEXT DEFAULT \'pending\', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY(assignment_id) REFERENCES assignments(id) ON DELETE CASCADE)'
-    : 'CREATE TABLE IF NOT EXISTS submissions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, assignment_id INTEGER NOT NULL, content TEXT, grade INTEGER, feedback TEXT, status TEXT DEFAULT "pending", created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY(assignment_id) REFERENCES assignments(id) ON DELETE CASCADE)';
+    ? 'CREATE TABLE IF NOT EXISTS submissions (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, assignment_id INTEGER NOT NULL, content TEXT, file_url TEXT, grade INTEGER, feedback TEXT, status TEXT DEFAULT \'pending\', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY(assignment_id) REFERENCES assignments(id) ON DELETE CASCADE)'
+    : 'CREATE TABLE IF NOT EXISTS submissions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, assignment_id INTEGER NOT NULL, content TEXT, file_url TEXT, grade INTEGER, feedback TEXT, status TEXT DEFAULT "pending", created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY(assignment_id) REFERENCES assignments(id) ON DELETE CASCADE)';
 
   const progressTable = isPostgres
     ? 'CREATE TABLE IF NOT EXISTS progress (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, video_id INTEGER NOT NULL, status TEXT NOT NULL, watched_seconds INTEGER DEFAULT 0, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(user_id, video_id), FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY(video_id) REFERENCES videos(id) ON DELETE CASCADE)'
@@ -131,6 +131,7 @@ async function init() {
   await db.exec(videosTable);
   await db.exec(assignmentsTable);
   await db.exec(submissionsTable);
+  try { await db.exec('ALTER TABLE submissions ADD COLUMN file_url TEXT;'); } catch(e) {}
   await db.exec(progressTable);
   await db.exec(achievementsTable);
   await db.exec(userAchievementsTable);
