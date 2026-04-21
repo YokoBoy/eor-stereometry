@@ -12,3 +12,11 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Файлы дипломной работы и документы
+Пример подачи/
+регистрация_ЭВМ/
+пример дипломной работы.docx
+дипломная_работа_стереометрия.md
+example_thesis_text.txt
+prompt_for_ai_agent.md
