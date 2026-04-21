@@ -3,14 +3,9 @@ const { db } = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
+const { put } = require('@vercel/blob');
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) { cb(null, 'uploads/'); },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
+const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
   fileFilter: function (req, file, cb) {
@@ -84,7 +79,18 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
 router.post('/:id/submit', requireAuth, upload.single('file'), async (req, res) => {
   const { id } = req.params;
   const { content } = req.body;
-  const fileUrl = req.file ? '/uploads/' + req.file.filename : null;
+  let fileUrl = null;
+
+  if (req.file) {
+      try {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+          const filename = `assignments/${uniqueSuffix}${path.extname(req.file.originalname)}`;
+          const blob = await put(filename, req.file.buffer, { access: 'public', token: process.env.BLOB_READ_WRITE_TOKEN });
+          fileUrl = blob.url;
+      } catch (e) {
+          return res.status(500).json({ error: 'file_upload_error' });
+      }
+  }
 
   if (!content && !fileUrl) return res.status(400).json({ error: 'content_required' });
   
