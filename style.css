@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
 :root {
   --primary-color: #6366f1; /* Indigo */
@@ -13,7 +13,7 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   background-color: var(--bg-color);
   background-image: 
     radial-gradient(at 40% 20%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
@@ -27,7 +27,12 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6, .navbar-brand {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Принудительно применяем шрифт ко всем динамическим и системным элементам (редактор Quill, инпуты) */
+.ql-editor, .ql-editor *, .card-text, p, span, div, input, textarea, button {
+  font-family: 'Montserrat', sans-serif !important;
 }
 
 /* Animations */
@@ -147,7 +152,7 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   letter-spacing: 0.3px;
 }
 .btn-primary {
@@ -246,7 +251,7 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
   border-radius: 9999px;
   font-weight: 800;
   box-shadow: 0 8px 15px -3px rgba(245, 158, 11, 0.4);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 /* Progress Bar */
