@@ -5,27 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Профиль - Stereometry Online</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-  <meta name="theme-color" content="#ffffff">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg sticky-top">
+  <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
     <div class="container">
       <a class="navbar-brand" href="/">Stereometry<span class="text-dark">Online</span></a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -37,55 +21,100 @@
     </div>
   </nav>
 
-  <div class="container my-5 main-page-content">
+  <!-- Profile Header Banner -->
+  <div class="profile-banner"></div>
+
+  <div class="container pb-5" style="margin-top: -80px;">
     <div class="row">
+      <!-- Left Column: User Info -->
       <div class="col-lg-4 mb-4">
-        <div class="card text-center">
-          <div class="card-body">
-            <div class="mb-3">
-              <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 80px; height: 80px; font-size: 2rem;">
-                👤
-              </div>
+        <div class="card text-center h-100 shadow-sm border-0">
+          <div class="card-body d-flex flex-column align-items-center">
+            <div class="profile-avatar mb-3" id="profileInitials">
+              <!-- Loaded via JS -->
             </div>
-            <h4 class="card-title" id="profileName">Загрузка...</h4>
-            <p class="text-muted" id="profileEmail">...</p>
-            <div class="mt-3">
-              <span class="points-display">💎 <span id="profilePoints">0</span> очков</span>
+            <h4 class="card-title fw-bold" id="profileName">Загрузка...</h4>
+            <p class="text-muted mb-4" id="profileEmail">...</p>
+            
+            <div class="w-100 bg-light rounded-4 p-4 mt-auto">
+              <h6 class="fw-bold mb-3 text-start">Прогресс курса</h6>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-muted">Просмотрено</span>
+                <span class="small fw-bold"><span id="statWatched">0</span> из <span id="statTotal">0</span></span>
+              </div>
+              <div class="progress" style="height: 12px;">
+                <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div>
+              </div>
+              <div class="text-end small text-muted mt-1" id="progressText">0%</div>
             </div>
           </div>
         </div>
       </div>
       
+      <!-- Right Column: Details -->
       <div class="col-lg-8">
-        <div class="card mb-4">
-          <div class="card-header bg-white fw-bold">Мой прогресс</div>
-          <div class="card-body">
-            <div class="row text-center mb-4">
-              <div class="col-6">
-                <div class="h2 text-primary" id="statWatched">0</div>
-                <div class="text-muted small">Просмотрено видео</div>
-              </div>
-              <div class="col-6">
-                <div class="h2 text-primary" id="statTotal">0</div>
-                <div class="text-muted small">Всего видео</div>
-              </div>
+        
+        <!-- Certificate Block (Hidden by default) -->
+        <div id="certificateBlock" class="card mb-4 certificate-card p-4 d-none">
+          <div class="d-flex align-items-center">
+            <div class="display-4 text-warning me-4"><i class="fas fa-award"></i></div>
+            <div>
+              <h3 class="fw-bold text-primary mb-1">Поздравляем!</h3>
+              <p class="mb-0 text-muted">Вы успешно прошли курс и получили сертификат об окончании.</p>
             </div>
-            <div class="progress" style="height: 25px;">
-              <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%">
-                <span id="progressText">0%</span>
-              </div>
+            <div class="ms-auto">
+              <button class="btn btn-outline-primary fw-bold" onclick="alert('Сертификат готовится к выгрузке!')"><i class="fas fa-download me-2"></i> Скачать</button>
             </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header bg-white fw-bold">Достижения</div>
+        <!-- Grades Block -->
+        <div class="card mb-4 border-0 shadow-sm">
+          <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold"><i class="fas fa-graduation-cap text-primary me-2"></i> Дневник оценок</h5>
+          </div>
           <div class="card-body">
-            <div id="achievementsList" class="d-flex flex-wrap">
-              <!-- Achievements loaded here -->
+            <div class="table-responsive">
+              <table class="table table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>Задание</th>
+                    <th>Оценка</th>
+                    <th>Комментарий учителя</th>
+                    <th class="text-end">Дата</th>
+                  </tr>
+                </thead>
+                <tbody id="gradesList">
+                  <!-- Loaded via JS -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
+
+        <!-- Watched Videos Block -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold"><i class="fas fa-history text-primary me-2"></i> История просмотров</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>Урок</th>
+                    <th>Дата просмотра</th>
+                    <th class="text-end">Статус</th>
+                  </tr>
+                </thead>
+                <tbody id="watchedVideosList">
+                  <!-- Loaded via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

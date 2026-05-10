@@ -232,7 +232,9 @@ async function loadProfile() {
     
     document.getElementById('profileName').textContent = u.name || u.email;
     document.getElementById('profileEmail').textContent = u.email;
-    document.getElementById('profilePoints').textContent = u.points || 0;
+    
+    const initials = (u.name || u.email)[0].toUpperCase();
+    document.getElementById('profileInitials').textContent = initials;
     
     document.getElementById('statWatched').textContent = data.stats.watched;
     document.getElementById('statTotal').textContent = data.stats.totalVideos;
@@ -240,15 +242,44 @@ async function loadProfile() {
     document.getElementById('progressText').textContent = `${pct}%`;
     document.getElementById('progressBar').style.width = `${pct}%`;
 
-    const achList = document.getElementById('achievementsList');
-    if (data.achievements && data.achievements.length) {
-      achList.innerHTML = data.achievements.map(a => `
-        <div class="achievement-badge" title="${a.description}">
-          <span class="fs-5 me-1">${a.icon}</span> ${a.title}
-        </div>
+    // Render Certificate
+    const certBlock = document.getElementById('certificateBlock');
+    if (data.hasCertificate) {
+      certBlock.classList.remove('d-none');
+    }
+
+    // Render Watched Videos
+    const watchedList = document.getElementById('watchedVideosList');
+    if (data.watchedVideosDetails && data.watchedVideosDetails.length) {
+      watchedList.innerHTML = data.watchedVideosDetails.map(w => `
+        <tr>
+          <td><i class="fas fa-play-circle text-primary me-2"></i> ${w.title}</td>
+          <td class="text-muted">${new Date(w.updated_at).toLocaleDateString()}</td>
+          <td class="text-end"><span class="badge bg-success">Просмотрено</span></td>
+        </tr>
       `).join('');
     } else {
-      achList.innerHTML = '<p class="text-muted small">Пока нет достижений. Смотри видео и учись!</p>';
+      watchedList.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Вы еще не посмотрели ни одного видео.</td></tr>';
+    }
+
+    // Render Grades
+    const gradesList = document.getElementById('gradesList');
+    if (data.gradedSubmissions && data.gradedSubmissions.length) {
+      gradesList.innerHTML = data.gradedSubmissions.map(g => {
+        const badgeColor = g.grade >= 4 ? 'success' : (g.grade === 3 ? 'warning' : 'danger');
+        return `
+        <tr>
+          <td>
+            <div class="fw-bold">${g.assignment_title}</div>
+            <div class="small text-muted">${g.video_title || 'Задание'}</div>
+          </td>
+          <td><span class="badge bg-${badgeColor} fs-6">${g.grade}</span></td>
+          <td class="text-muted small">${g.feedback || '-'}</td>
+          <td class="text-end text-muted small">${new Date(g.created_at).toLocaleDateString()}</td>
+        </tr>
+      `}).join('');
+    } else {
+      gradesList.innerHTML = '<tr><td colspan="4" class="text-center text-muted">У вас пока нет проверенных заданий.</td></tr>';
     }
 
   } catch (e) {

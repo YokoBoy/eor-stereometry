@@ -2,7 +2,6 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { db } = require('../db');
 const { requireAuth } = require('../middleware/auth');
-const { checkAndAward } = require('../utils/gamification');
 
 const router = express.Router();
 
@@ -43,7 +42,7 @@ router.put('/update', requireAuth, async (req, res) => {
     const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
     await db.run(query, params);
 
-    const updatedUser = await db.get('SELECT id, email, role, name, points FROM users WHERE id = ?', [userId]);
+    const updatedUser = await db.get('SELECT id, email, role, name FROM users WHERE id = ?', [userId]);
     res.json({ user: updatedUser });
   } catch (error) {
     console.error('Update profile error:', error);
@@ -52,17 +51,26 @@ router.put('/update', requireAuth, async (req, res) => {
 });
 
 router.get('/me', requireAuth, async (req, res) => {
-  // Get achievements
-  const achievements = await db.all(`
-    SELECT a.title, a.description, a.icon, a.points, ua.earned_at 
-    FROM user_achievements ua 
-    JOIN achievements a ON ua.achievement_id = a.id 
-    WHERE ua.user_id = ?
+  // Get watched videos details
+  const watchedVideosDetails = await db.all(`
+      SELECT v.id, v.title, p.watched_seconds, p.updated_at
+      FROM progress p
+      JOIN videos v ON p.video_id = v.id
+      WHERE p.user_id = ? AND (p.status = 'completed' OR p.watched_seconds > 60)
+      ORDER BY p.updated_at DESC
   `, [req.user.id]);
+  
+  const watchedIds = new Set(watchedVideosDetails.map(w => w.id));
 
-  // Calculate detailed progress
-  const watched = await db.all('SELECT video_id FROM progress WHERE user_id = ? AND (status = \'completed\' OR watched_seconds > 60)', [req.user.id]);
-  const watchedIds = new Set(watched.map(w => w.video_id));
+  // Get all graded submissions for profile display
+  const gradedSubmissions = await db.all(`
+      SELECT s.id, s.assignment_id, s.grade, s.feedback, s.created_at, a.title as assignment_title, v.title as video_title
+      FROM submissions s
+      JOIN assignments a ON s.assignment_id = a.id
+      LEFT JOIN videos v ON a.video_id = v.id
+      WHERE s.user_id = ? AND s.status = 'graded'
+      ORDER BY s.created_at DESC
+  `, [req.user.id]);
 
   // Get all assignments per video
   const assignments = await db.all('SELECT id, video_id FROM assignments');
@@ -72,9 +80,7 @@ router.get('/me', requireAuth, async (req, res) => {
     assignMap[a.video_id].push(a.id);
   });
 
-  // Get user submissions
-  const submissions = await db.all("SELECT assignment_id, grade FROM submissions WHERE user_id = ? AND status = 'graded'", [req.user.id]);
-  const passedAssignIds = new Set(submissions.filter(s => s.grade >= 3).map(s => s.assignment_id)); // Grade 3-5 is pass
+  const passedAssignIds = new Set(gradedSubmissions.filter(s => s.grade >= 3).map(s => s.assignment_id)); // Grade 3-5 is pass
 
   // Determine fully completed videos
   let completedCount = 0;
@@ -101,12 +107,13 @@ router.get('/me', requireAuth, async (req, res) => {
     }
   }
 
-  // Check achievements
-  await checkAndAward(req.user.id, 'watch_5', completedCount);
+  const hasCertificate = (allVideos.length > 0 && completedCount === allVideos.length);
 
   res.json({ 
     user: req.user, 
-    achievements, 
+    watchedVideosDetails,
+    gradedSubmissions,
+    hasCertificate,
     completedVideoIds,
     stats: {
         watched: completedCount,
@@ -123,10 +130,6 @@ router.post('/video-progress', requireAuth, async (req, res) => {
   
   await db.run('INSERT INTO progress (user_id, video_id, status, watched_seconds) VALUES (?, ?, ?, ?) ON CONFLICT(user_id, video_id) DO UPDATE SET status=excluded.status, watched_seconds=excluded.watched_seconds, updated_at=CURRENT_TIMESTAMP', [req.user.id, video_id, status, watched_seconds || 0]);
   
-  if (status === 'watched') {
-    await checkAndAward(req.user.id, 'watch_5_videos');
-  }
-
   res.json({ ok: true });
 });
 

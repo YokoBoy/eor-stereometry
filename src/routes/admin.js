@@ -9,10 +9,9 @@ router.get('/users', requireAuth, requireAdmin, async (req, res) => {
   try {
     const users = await db.all(`
       SELECT 
-        u.id, u.email, u.name, u.role, u.points, u.created_at,
+        u.id, u.email, u.name, u.role, u.created_at,
         (SELECT COUNT(*) FROM progress p WHERE p.user_id = u.id AND (p.status = 'completed' OR p.watched_seconds > 60)) as watched_videos,
-        (SELECT COUNT(*) FROM submissions s WHERE s.user_id = u.id AND s.status = 'graded' AND s.grade >= 3) as completed_assignments,
-        (SELECT COUNT(*) FROM user_achievements ua WHERE ua.user_id = u.id) as achievements_count
+        (SELECT COUNT(*) FROM submissions s WHERE s.user_id = u.id AND s.status = 'graded' AND s.grade >= 3) as completed_assignments
       FROM users u
       WHERE u.role = 'student'
       ORDER BY u.created_at DESC
@@ -29,7 +28,7 @@ router.get('/users', requireAuth, requireAdmin, async (req, res) => {
 router.get('/users/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await db.get('SELECT id, email, name, role, points, created_at FROM users WHERE id = ?', [id]);
+    const user = await db.get('SELECT id, email, name, role, created_at FROM users WHERE id = ?', [id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     // Watched videos detail
@@ -50,20 +49,10 @@ router.get('/users/:id', requireAuth, requireAdmin, async (req, res) => {
       ORDER BY s.created_at DESC
     `, [id]);
 
-    // Achievements detail
-    const achievements = await db.all(`
-      SELECT a.title, a.icon, ua.earned_at
-      FROM user_achievements ua
-      JOIN achievements a ON ua.achievement_id = a.id
-      WHERE ua.user_id = ?
-      ORDER BY ua.earned_at DESC
-    `, [id]);
-
     res.json({
       user,
       watchedVideos,
-      submissions,
-      achievements
+      submissions
     });
   } catch (error) {
     console.error('Admin user detail error:', error);

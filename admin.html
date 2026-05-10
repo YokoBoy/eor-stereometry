@@ -437,7 +437,6 @@
                   <th class="ps-4">Студент</th>
                   <th>Прогресс</th>
                   <th>Задания</th>
-                  <th>Баллы</th>
                   <th>Дата регистрации</th>
                   <th class="text-end pe-4">Действия</th>
                 </tr>
@@ -635,9 +634,6 @@
           </td>
           <td>
              <span class="badge bg-soft-success text-success border border-success border-opacity-10">${u.completed_assignments} заданий</span>
-          </td>
-          <td>
-             <span class="fw-bold text-warning">💎 ${u.points}</span>
           </td>
           <td>
              <div class="small text-muted">${new Date(u.created_at).toLocaleDateString()}</div>
