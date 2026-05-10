@@ -175,7 +175,7 @@ async function loadVideo(id) {
       player.src = v.url;
     }
     
-    player.onended = () => api('/profile/video-progress', 'POST', { video_id: v.id, status: 'watched', watched_seconds: Math.floor(player.duration) }).catch(console.error);
+    player.onended = () => api('/profile/video-progress', 'POST', { video_id: v.id, status: 'completed', watched_seconds: Math.floor(player.duration) }).catch(console.error);
 
     // Comments
     renderComments(data.comments);

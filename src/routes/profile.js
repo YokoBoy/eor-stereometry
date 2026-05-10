@@ -56,7 +56,7 @@ router.get('/me', requireAuth, async (req, res) => {
       SELECT v.id, v.title, p.watched_seconds, p.updated_at
       FROM progress p
       JOIN videos v ON p.video_id = v.id
-      WHERE p.user_id = ? AND (p.status = 'completed' OR p.watched_seconds > 60)
+      WHERE p.user_id = ? AND (p.status = 'completed' OR p.status = 'watched' OR p.watched_seconds > 60)
       ORDER BY p.updated_at DESC
   `, [req.user.id]);
   
