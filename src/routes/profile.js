@@ -116,7 +116,8 @@ router.get('/me', requireAuth, async (req, res) => {
     hasCertificate,
     completedVideoIds,
     stats: {
-        watched: completedCount,
+        watched: watchedIds.size,
+        completedWithAssignments: completedCount,
         totalVideos: allVideos.length
     }
   });
