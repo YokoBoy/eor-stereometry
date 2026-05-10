@@ -65,9 +65,14 @@
           </div>
           <div class="card-body">
             <h2 id="videoTitle" class="mb-2">Загрузка...</h2>
-            <div class="d-flex align-items-center mb-4">
-              <span class="badge bg-secondary me-2" id="videoTopic">Тема</span>
-              <span class="text-muted small" id="videoDate"></span>
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <div>
+                <span class="badge bg-secondary me-2" id="videoTopic">Тема</span>
+                <span class="text-muted small" id="videoDate"></span>
+              </div>
+              <button class="btn btn-outline-success btn-sm" id="markWatchedBtn" onclick="forceMarkWatched()">
+                <i class="fas fa-check-circle"></i> Урок просмотрен
+              </button>
             </div>
             
             <!-- Theory Content -->
@@ -207,14 +212,34 @@
             document.getElementById('videoContainerWrapper').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-white">Видео не найдено или недоступно</div>';
         }
 
-        // Track Progress (Simple > 60s)
+        // Track Progress
         let tracked = false;
+        
+        window.forceMarkWatched = () => {
+           if (!tracked) {
+             tracked = true;
+             api('/profile/video-progress', 'POST', { video_id: videoId, status: 'completed', watched_seconds: 60 })
+               .then(() => {
+                 const btn = document.getElementById('markWatchedBtn');
+                 btn.classList.remove('btn-outline-success');
+                 btn.classList.add('btn-success');
+                 btn.innerHTML = '<i class="fas fa-check"></i> Зачтено';
+                 btn.disabled = true;
+               })
+               .catch(console.error);
+           }
+        };
+
+        // For Native Video
         player.addEventListener('timeupdate', () => {
-          if (!tracked && player.currentTime > 60) {
-            tracked = true;
-            api('/profile/video-progress', 'POST', { video_id: videoId, status: 'watched', watched_seconds: Math.floor(player.currentTime) });
-          }
+          if (!tracked && player.currentTime > 30) forceMarkWatched();
         });
+        player.addEventListener('ended', forceMarkWatched);
+
+        // For Iframe Videos (Auto-complete after 15 seconds)
+        if (sources[0] && (sources[0].url.includes('youtube') || sources[0].url.includes('vimeo') || sources[0].url.includes('youtu.be'))) {
+           setTimeout(forceMarkWatched, 15000);
+        }
 
         // Comments
         renderComments(data.comments);
