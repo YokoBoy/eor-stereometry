@@ -657,7 +657,7 @@
 
       try {
         const data = await api(`/admin/users/${id}`);
-        const { user, watchedVideos, submissions, achievements } = data;
+        const { user, watchedVideos, submissions } = data;
 
         content.innerHTML = `
           <div class="row mb-4">
@@ -666,7 +666,6 @@
               <p class="text-muted mb-0">${user.email}</p>
             </div>
             <div class="col-md-6 text-md-end">
-              <div class="h4 text-warning mb-0">💎 ${user.points} баллов</div>
               <div class="small text-muted">Зарегистрирован: ${new Date(user.created_at).toLocaleDateString()}</div>
             </div>
           </div>
@@ -677,9 +676,6 @@
             </li>
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#user-asgs">Задания (${submissions.length})</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#user-achs">Достижения (${achievements.length})</button>
             </li>
           </ul>
           
@@ -712,15 +708,6 @@
                   </div>
                 `).join('') || '<div class="p-3 text-center text-muted">Нет сданных заданий</div>'}
               </div>
-            </div>
-            <div class="tab-pane fade" id="user-achs">
-               <div class="d-flex flex-wrap gap-2">
-                 ${achievements.map(a => `
-                   <div class="badge bg-light text-dark p-2 border d-flex align-items-center">
-                     <span class="me-2">${a.icon}</span> ${a.title}
-                   </div>
-                 `).join('') || '<div class="p-3 text-center text-muted w-100">Нет достижений</div>'}
-               </div>
             </div>
           </div>
         `;
