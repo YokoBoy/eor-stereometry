@@ -126,26 +126,41 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // Admin comments routes
-router.get('/comments/pending', requireAuth, requireAdmin, (req, res) => {
-  const rows = db.prepare(`
-    SELECT c.id, c.content, c.created_at, u.name as user_name, v.title as video_title 
-    FROM comments c 
-    JOIN users u ON c.user_id = u.id 
-    JOIN videos v ON c.video_id = v.id 
-    WHERE c.is_approved = 0 
-    ORDER BY c.created_at ASC
-  `).all();
-  res.json(rows);
+router.get('/comments/pending', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const rows = await db.all(`
+      SELECT c.id, c.content, c.created_at, u.name as user_name, v.title as video_title 
+      FROM comments c 
+      JOIN users u ON c.user_id = u.id 
+      JOIN videos v ON c.video_id = v.id 
+      WHERE c.is_approved = 0 
+      ORDER BY c.created_at ASC
+    `);
+    res.json(rows);
+  } catch (error) {
+    console.error('Pending comments error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-router.patch('/comments/:id/approve', requireAuth, requireAdmin, (req, res) => {
-  db.prepare('UPDATE comments SET is_approved = 1 WHERE id = ?').run(req.params.id);
-  res.json({ ok: true });
+router.patch('/comments/:id/approve', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    await db.run('UPDATE comments SET is_approved = 1 WHERE id = ?', [req.params.id]);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Approve comment error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-router.delete('/comments/:id', requireAuth, requireAdmin, (req, res) => {
-  db.prepare('DELETE FROM comments WHERE id = ?').run(req.params.id);
-  res.json({ ok: true });
+router.delete('/comments/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    await db.run('DELETE FROM comments WHERE id = ?', [req.params.id]);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Delete comment error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 module.exports = router;
