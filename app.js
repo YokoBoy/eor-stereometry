@@ -243,10 +243,16 @@ async function loadProfile() {
     document.getElementById('progressText').textContent = `${pct}%`;
     document.getElementById('progressBar').style.width = `${pct}%`;
 
-    // Render Certificate
+    // Render Certificate or Needs Improvement Block
     const certBlock = document.getElementById('certificateBlock');
+    const failBlock = document.getElementById('needsImprovementBlock');
+    
     if (data.hasCertificate) {
       certBlock.classList.remove('d-none');
+      document.getElementById('certAverageGrade').textContent = data.averageGrade;
+    } else if (data.needsImprovement) {
+      failBlock.classList.remove('d-none');
+      document.getElementById('failAverageGrade').textContent = data.averageGrade;
     }
 
     // Render Watched Videos
@@ -394,9 +400,40 @@ function generateCertificate() {
 
   // === Stats line ===
   const stats = _profileData.stats;
+  
+  let gradeText = '';
+  let medalColor1 = '#f9d423';
+  let medalColor2 = '#daa520';
+  let ribbonColor1 = '#c0392b';
+  let ribbonColor2 = '#2980b9';
+
+  switch (_profileData.gradeLevel) {
+    case 'excellent': 
+      gradeText = 'С отличием'; 
+      break;
+    case 'good': 
+      gradeText = 'Хорошист'; 
+      medalColor1 = '#e6e6e6'; medalColor2 = '#95a5a6'; // Silver
+      ribbonColor1 = '#8e44ad'; ribbonColor2 = '#2980b9';
+      break;
+    case 'acceptable': 
+      gradeText = 'Приемлемо'; 
+      medalColor1 = '#d35400'; medalColor2 = '#e67e22'; // Bronze
+      ribbonColor1 = '#27ae60'; ribbonColor2 = '#2c3e50';
+      break;
+    case 'passing': 
+      gradeText = 'Проходной балл'; 
+      medalColor1 = '#bdc3c7'; medalColor2 = '#7f8c8d'; // Iron/Basic
+      ribbonColor1 = '#34495e'; ribbonColor2 = '#2c3e50';
+      break;
+  }
+
   ctx.fillStyle = '#888';
   ctx.font = '20px Montserrat, Georgia, serif';
-  ctx.fillText(`Просмотрено уроков: ${stats.watched} из ${stats.totalVideos}  •  Выполнено заданий: ${stats.completedWithAssignments || stats.watched}`, W / 2, 780);
+  ctx.fillText(`Просмотрено уроков: ${stats.watched} из ${stats.totalVideos}  •  Средняя оценка: ${_profileData.averageGrade} (${gradeText})`, W / 2, 780);
+
+  // Redraw medal with dynamic colors
+  drawMedal(ctx, W / 2, 210, medalColor1, medalColor2, ribbonColor1, ribbonColor2);
 
   // === Bottom decorative line ===
   ctx.strokeStyle = '#daa520';
@@ -488,9 +525,9 @@ function drawCornerOrnament(ctx, x, y, dx, dy) {
   ctx.restore();
 }
 
-function drawMedal(ctx, x, y) {
+function drawMedal(ctx, x, y, mc1 = '#f9d423', mc2 = '#daa520', rc1 = '#c0392b', rc2 = '#2980b9') {
   // Ribbon tails
-  ctx.fillStyle = '#c0392b';
+  ctx.fillStyle = rc1;
   ctx.beginPath();
   ctx.moveTo(x - 25, y + 10);
   ctx.lineTo(x - 35, y + 55);
@@ -498,7 +535,7 @@ function drawMedal(ctx, x, y) {
   ctx.closePath();
   ctx.fill();
 
-  ctx.fillStyle = '#2980b9';
+  ctx.fillStyle = rc2;
   ctx.beginPath();
   ctx.moveTo(x + 25, y + 10);
   ctx.lineTo(x + 35, y + 55);
@@ -508,8 +545,8 @@ function drawMedal(ctx, x, y) {
 
   // Medal circle
   const grad = ctx.createRadialGradient(x, y, 5, x, y, 35);
-  grad.addColorStop(0, '#f9d423');
-  grad.addColorStop(1, '#daa520');
+  grad.addColorStop(0, mc1);
+  grad.addColorStop(1, mc2);
   ctx.fillStyle = grad;
   ctx.beginPath();
   ctx.arc(x, y, 30, 0, Math.PI * 2);

@@ -61,12 +61,25 @@
               <div class="display-4 text-warning"><i class="fas fa-award"></i></div>
               <div class="flex-grow-1">
                 <h4 class="fw-bold text-white mb-1">🎉 Поздравляем!</h4>
-                <p class="mb-0 text-white-50">Вы успешно завершили все уроки курса «Стереометрия». Ваш сертификат готов к скачиванию!</p>
+                <p class="mb-0 text-white-50">Вы успешно завершили все уроки курса со средней оценкой <strong id="certAverageGrade" class="text-white"></strong>. Ваш сертификат готов к скачиванию!</p>
               </div>
               <div>
                 <button class="btn btn-warning fw-bold px-4 py-2 shadow" onclick="generateCertificate()" id="downloadCertBtn">
                   <i class="fas fa-download me-2"></i> Скачать сертификат
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Needs Improvement Block (Hidden by default) -->
+        <div id="needsImprovementBlock" class="card mb-4 border-0 shadow-sm d-none" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border-radius: 16px;">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center flex-wrap gap-3">
+              <div class="display-4 text-danger"><i class="fas fa-exclamation-triangle"></i></div>
+              <div class="flex-grow-1">
+                <h4 class="fw-bold text-dark mb-1">Курс пройден, но...</h4>
+                <p class="mb-0 text-dark">Вы просмотрели все уроки, но ваша средняя оценка <strong><span id="failAverageGrade"></span></strong> ниже проходного балла (2.6). Пожалуйста, переделайте задания, чтобы повысить оценки и получить сертификат.</p>
               </div>
             </div>
           </div>

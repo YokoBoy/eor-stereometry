@@ -80,44 +80,37 @@ router.get('/me', requireAuth, async (req, res) => {
     assignMap[a.video_id].push(a.id);
   });
 
-  const passedAssignIds = new Set(gradedSubmissions.filter(s => s.grade >= 3).map(s => s.assignment_id)); // Grade 3-5 is pass
+  const gradedGrades = gradedSubmissions.map(s => s.grade).filter(g => g != null);
+  const averageGrade = gradedGrades.length > 0 
+    ? Math.round((gradedGrades.reduce((a, b) => a + b, 0) / gradedGrades.length) * 100) / 100
+    : 0;
 
-  // Determine fully completed videos
-  let completedCount = 0;
-  const completedVideoIds = [];
+  // Determine grade level
+  let gradeLevel = 'none'; // неудовлетворительно
+  if (averageGrade >= 4.5) gradeLevel = 'excellent';       // отличник
+  else if (averageGrade >= 3.5) gradeLevel = 'good';       // хорошист (4)
+  else if (averageGrade >= 3.0) gradeLevel = 'acceptable'; // приемлемо (3)
+  else if (averageGrade >= 2.6) gradeLevel = 'passing';    // проходной
 
   // Get all videos to check
   const allVideos = await db.all('SELECT id FROM videos');
   
-  for (const v of allVideos) {
-    const isWatched = watchedIds.has(v.id);
-    if (!isWatched) continue;
-
-    // Check assignments
-    const vAssigns = assignMap[v.id] || [];
-    if (vAssigns.length === 0) {
-      completedCount++;
-      completedVideoIds.push(v.id);
-    } else {
-      const allPassed = vAssigns.every(aid => passedAssignIds.has(aid));
-      if (allPassed) {
-         completedCount++;
-         completedVideoIds.push(v.id);
-      }
-    }
-  }
-
-  const hasCertificate = (allVideos.length > 0 && completedCount === allVideos.length);
+  const allWatched = allVideos.length > 0 && watchedIds.size >= allVideos.length;
+  const hasCertificate = allWatched && gradeLevel !== 'none' && gradedGrades.length > 0;
+  const needsImprovement = allWatched && !hasCertificate && gradedGrades.length > 0;
 
   res.json({ 
     user: req.user, 
     watchedVideosDetails,
     gradedSubmissions,
     hasCertificate,
-    completedVideoIds,
+    needsImprovement,
+    averageGrade,
+    gradeLevel,
+    completedVideoIds: [...watchedIds],
     stats: {
         watched: watchedIds.size,
-        completedWithAssignments: completedCount,
+        totalGraded: gradedGrades.length,
         totalVideos: allVideos.length
     }
   });
