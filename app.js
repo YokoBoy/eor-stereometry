@@ -228,6 +228,7 @@ function renderComments(comments) {
 async function loadProfile() {
   try {
     const data = await api('/profile/me');
+    _profileData = data; // Store for certificate generation
     const u = data.user;
     
     document.getElementById('profileName').textContent = u.name || u.email;
@@ -285,6 +286,245 @@ async function loadProfile() {
   } catch (e) {
     window.location.href = '/login.html';
   }
+}
+
+// Certificate Generation
+let _profileData = null; // Store profile data for certificate
+
+function generateCertificate() {
+  if (!_profileData) return;
+  const canvas = document.getElementById('certCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // === Background ===
+  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, '#fdfcfb');
+  bgGrad.addColorStop(1, '#f5f0e8');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // === Decorative outer border ===
+  ctx.strokeStyle = '#b8860b';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(30, 30, W - 60, H - 60);
+  ctx.strokeStyle = '#daa520';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(45, 45, W - 90, H - 90);
+
+  // === Corner ornaments ===
+  drawCornerOrnament(ctx, 50, 50, 1, 1);
+  drawCornerOrnament(ctx, W - 50, 50, -1, 1);
+  drawCornerOrnament(ctx, 50, H - 50, 1, -1);
+  drawCornerOrnament(ctx, W - 50, H - 50, -1, -1);
+
+  // === Top decorative line ===
+  ctx.strokeStyle = '#daa520';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(200, 140);
+  ctx.lineTo(W - 200, 140);
+  ctx.stroke();
+
+  // === Medal icon (drawn) ===
+  drawMedal(ctx, W / 2, 210);
+
+  // === "СЕРТИФИКАТ" ===
+  ctx.fillStyle = '#1a1a2e';
+  ctx.font = 'bold 72px Montserrat, Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('СЕРТИФИКАТ', W / 2, 340);
+
+  // === Subtitle ===
+  ctx.fillStyle = '#555';
+  ctx.font = '26px Montserrat, Georgia, serif';
+  ctx.fillText('об успешном прохождении онлайн-курса', W / 2, 390);
+
+  // === Decorative divider ===
+  ctx.strokeStyle = '#daa520';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - 120, 420);
+  ctx.lineTo(W / 2 + 120, 420);
+  ctx.stroke();
+  // Diamond in center
+  ctx.fillStyle = '#daa520';
+  ctx.beginPath();
+  ctx.moveTo(W / 2, 412);
+  ctx.lineTo(W / 2 + 8, 420);
+  ctx.lineTo(W / 2, 428);
+  ctx.lineTo(W / 2 - 8, 420);
+  ctx.closePath();
+  ctx.fill();
+
+  // === "Настоящим удостоверяется, что" ===
+  ctx.fillStyle = '#666';
+  ctx.font = 'italic 24px Montserrat, Georgia, serif';
+  ctx.fillText('Настоящим подтверждается, что', W / 2, 480);
+
+  // === Student Name ===
+  const userName = _profileData.user.name || _profileData.user.email;
+  ctx.fillStyle = '#1a1a2e';
+  ctx.font = 'bold 56px Montserrat, Georgia, serif';
+  ctx.fillText(userName, W / 2, 550);
+
+  // === Underline under name ===
+  const nameWidth = ctx.measureText(userName).width;
+  ctx.strokeStyle = '#daa520';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - nameWidth / 2 - 20, 565);
+  ctx.lineTo(W / 2 + nameWidth / 2 + 20, 565);
+  ctx.stroke();
+
+  // === Description ===
+  ctx.fillStyle = '#555';
+  ctx.font = '24px Montserrat, Georgia, serif';
+  ctx.fillText('успешно завершил(а) все разделы образовательного курса', W / 2, 620);
+
+  // === Course Name ===
+  ctx.fillStyle = '#4a47a3';
+  ctx.font = 'bold 44px Montserrat, Georgia, serif';
+  ctx.fillText('«Стереометрия»', W / 2, 690);
+
+  ctx.fillStyle = '#777';
+  ctx.font = '22px Montserrat, Georgia, serif';
+  ctx.fillText('на платформе Stereometry Online', W / 2, 730);
+
+  // === Stats line ===
+  const stats = _profileData.stats;
+  ctx.fillStyle = '#888';
+  ctx.font = '20px Montserrat, Georgia, serif';
+  ctx.fillText(`Просмотрено уроков: ${stats.watched} из ${stats.totalVideos}  •  Выполнено заданий: ${stats.completedWithAssignments || stats.watched}`, W / 2, 780);
+
+  // === Bottom decorative line ===
+  ctx.strokeStyle = '#daa520';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(200, 820);
+  ctx.lineTo(W - 200, 820);
+  ctx.stroke();
+
+  // === Date and Certificate ID ===
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' });
+  const certId = 'SO-' + today.getFullYear() + '-' + String(_profileData.user.id).padStart(4, '0');
+
+  // Left: Date
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#888';
+  ctx.font = '20px Montserrat, Georgia, serif';
+  ctx.fillText('Дата выдачи:', 120, 880);
+  ctx.fillStyle = '#333';
+  ctx.font = 'bold 22px Montserrat, Georgia, serif';
+  ctx.fillText(dateStr, 120, 910);
+
+  // Right: Certificate ID
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#888';
+  ctx.font = '20px Montserrat, Georgia, serif';
+  ctx.fillText('Номер сертификата:', W - 120, 880);
+  ctx.fillStyle = '#333';
+  ctx.font = 'bold 22px Montserrat, Georgia, serif';
+  ctx.fillText(certId, W - 120, 910);
+
+  // Center: Signature line
+  ctx.textAlign = 'center';
+  ctx.strokeStyle = '#999';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - 100, 905);
+  ctx.lineTo(W / 2 + 100, 905);
+  ctx.stroke();
+  ctx.fillStyle = '#888';
+  ctx.font = '18px Montserrat, Georgia, serif';
+  ctx.fillText('Преподаватель', W / 2, 930);
+
+  // === Bottom footer ===
+  ctx.fillStyle = '#bbb';
+  ctx.font = '16px Montserrat, Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('stereometryonline.vercel.app', W / 2, 1000);
+
+  // === Watermark seal ===
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+  ctx.fillStyle = '#4a47a3';
+  ctx.font = 'bold 200px Montserrat, Georgia, serif';
+  ctx.translate(W / 2, H / 2 + 50);
+  ctx.rotate(-0.3);
+  ctx.fillText('VERIFIED', 0, 0);
+  ctx.restore();
+
+  // === Bottom decorative border ===
+  ctx.strokeStyle = '#daa520';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(200, 1040);
+  ctx.lineTo(W - 200, 1040);
+  ctx.stroke();
+
+  // === Download ===
+  const link = document.createElement('a');
+  link.download = `Сертификат_${userName.replace(/\s+/g, '_')}_StereometryOnline.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function drawCornerOrnament(ctx, x, y, dx, dy) {
+  ctx.save();
+  ctx.strokeStyle = '#daa520';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + dx * 60, y);
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, y + dy * 60);
+  // Small arc
+  ctx.moveTo(x + dx * 15, y + dy * 15);
+  ctx.arc(x + dx * 15, y + dy * 15, 5, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawMedal(ctx, x, y) {
+  // Ribbon tails
+  ctx.fillStyle = '#c0392b';
+  ctx.beginPath();
+  ctx.moveTo(x - 25, y + 10);
+  ctx.lineTo(x - 35, y + 55);
+  ctx.lineTo(x - 15, y + 40);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#2980b9';
+  ctx.beginPath();
+  ctx.moveTo(x + 25, y + 10);
+  ctx.lineTo(x + 35, y + 55);
+  ctx.lineTo(x + 15, y + 40);
+  ctx.closePath();
+  ctx.fill();
+
+  // Medal circle
+  const grad = ctx.createRadialGradient(x, y, 5, x, y, 35);
+  grad.addColorStop(0, '#f9d423');
+  grad.addColorStop(1, '#daa520');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, 30, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#b8860b';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Star inside medal
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 30px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('★', x, y + 2);
+  ctx.textBaseline = 'alphabetic';
 }
 
 // Global init
